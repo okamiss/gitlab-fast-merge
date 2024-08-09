@@ -172,8 +172,20 @@ const App: React.FC = () => {
   ])
 
   const createLink = (b: string, s: string) => {
-    const frontendUrl = 'https://gitlab.techzgzb.cn/frontend'
+    if (!s) return
 
+    const frontendUrl = 'https://gitlab.techzgzb.cn/frontend'
+    const createBranch = `${frontendUrl}/${s}/-/branches/new`
+    setcbname(createBranch)
+
+    const createTag = `${frontendUrl}/${s}/-/tags/new`
+    setctname(createTag)
+
+    if (!b) {
+      setBetaMerge('')
+      setProdMerge('')
+      return
+    }
     const betaLink = `${frontendUrl}/${s}/-/merge_requests/new?merge_request[source_project_id]=${storeMap.get(
       s
     )}&merge_request[source_branch]=${b}&merge_request[target_project_id]=${storeMap.get(
@@ -183,12 +195,6 @@ const App: React.FC = () => {
 
     const prodLink = `${frontendUrl}/${s}/-/merge_requests/new?merge_request[source_branch]=${b}`
     setProdMerge(prodLink)
-
-    const createBranch = `${frontendUrl}/${s}/-/branches/new`
-    setcbname(createBranch)
-
-    const createTag = `${frontendUrl}/${s}/-/tags/new`
-    setctname(createTag)
   }
 
   // 仓库选择
