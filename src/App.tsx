@@ -88,7 +88,7 @@ const TimeComponent: React.FC<{ title: string; childStyle: object; sendName?: an
           onFinish={onFinish}
           onFieldsChange={getChange}
           initialValues={{
-            preVal: `${title === 'tag' ? 'prod' : ''}`,
+            preVal: `${title === 'tag' ? 'prod' : 'hyl'}`,
             time: dayjs(new Date()).format('YYYYMMDD'),
             sufVal: ''
           }}
