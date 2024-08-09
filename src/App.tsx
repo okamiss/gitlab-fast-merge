@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react'
-import { Card, Input, Col, Row, Button, Checkbox, Form, Select, message } from 'antd'
+import React, { useEffect, useRef, useState } from 'react'
+import { Card, Input, Col, Row, Button, Checkbox, Form, Select, message, Space } from 'antd'
 import type { GetProp } from 'antd'
 
 import { Title, Preview } from './app-style'
 import dayjs from 'dayjs'
 import copy from 'clipboard-copy'
+const { TextArea } = Input
 
 type CheckboxValueType = GetProp<typeof Checkbox.Group, 'value'>[number]
 const CheckboxGroup = Checkbox.Group
@@ -29,7 +30,11 @@ const generateTime = (checkedList: any) => {
   return str1 + str2 + str3
 }
 
-const TimeComponent: React.FC<{ title: string; childStyle: object }> = ({ title, childStyle }) => {
+const TimeComponent: React.FC<{ title: string; childStyle: object; sendName?: any }> = ({
+  title,
+  childStyle,
+  sendName
+}) => {
   const [messageApi, contextHolder] = message.useMessage()
   const [form] = Form.useForm()
   const [checkedList, setCheckedList] = useState<CheckboxValueType[]>(
@@ -47,7 +52,11 @@ const TimeComponent: React.FC<{ title: string; childStyle: object }> = ({ title,
 
   const getChange = () => {
     const { preVal, time, sufVal } = form.getFieldsValue()
-    setPreview(`${preVal}${preVal ? '/' : ''}${time}${sufVal ? '_' : ''}${sufVal}`)
+    const str = `${preVal}${preVal ? '/' : ''}${time}${sufVal ? '_' : ''}${sufVal}`
+    setPreview(str)
+    if (title === 'branch') {
+      sendName(str)
+    }
   }
 
   // 时间change
@@ -83,6 +92,7 @@ const TimeComponent: React.FC<{ title: string; childStyle: object }> = ({ title,
             time: dayjs(new Date()).format('YYYYMMDD'),
             sufVal: ''
           }}
+          autoComplete="off"
         >
           <Row gutter={5}>
             <Col span={5}>
@@ -135,11 +145,136 @@ const TimeComponent: React.FC<{ title: string; childStyle: object }> = ({ title,
 }
 
 const App: React.FC = () => {
+  const [messageApi, contextHolder] = message.useMessage()
+  const [betaMerge, setBetaMerge] = useState('')
+  const [prodMerge, setProdMerge] = useState('')
+  const [bname, setBname] = useState('')
+  // const [isinput, setIsinput] = useState(false)
+  const [sname, setSname] = useState('admin-crm')
+  // const isInputRef = useRef(false)
+
+  // useEffect(() => {
+  //   isInputRef.current = isinput
+  // }, [isinput])
+
+  const storeList = [
+    { value: 'admin-crm', label: 'crm' },
+    { value: 'admin-scrm', label: 'scrm' },
+    { value: 'web-wwside', label: '企微' }
+  ]
+
+  const storeMap = new Map([
+    ['admin-crm', 4],
+    ['admin-scrm', 10],
+    ['web-wwside', 16]
+  ])
+
+  const createLink = (b: string, s: string) => {
+    const betaLink = `https://gitlab.techzgzb.cn/frontend/${s}/-/merge_requests/new?merge_request[source_project_id]=${storeMap.get(
+      s
+    )}&merge_request[source_branch]=${b}&merge_request[target_project_id]=${storeMap.get(
+      s
+    )}&merge_request[target_branch]=beta`
+
+    const prodLink = `https://gitlab.techzgzb.cn/frontend/${s}/-/merge_requests/new?merge_request[source_branch]=${b}`
+
+    setBetaMerge(betaLink)
+    setProdMerge(prodLink)
+  }
+
+  // 仓库选择
+  const storeChange = (e: string) => {
+    setSname(e)
+    createLink(bname, e)
+  }
+
+  const getName = (e: string) => {
+    // if (isInputRef.current.isinput) return
+    // setBname(e)
+    // createLink()
+  }
+
+  // 分支名输入
+  const bnameChange = (e: string) => {
+    // setIsinput(true)
+    setBname(e)
+    createLink(e, sname)
+  }
+
+  const copyLink = (e: string) => {
+    copy(e)
+    messageApi.success('复制成功')
+  }
+
+  const openLink = (e: string) => {
+    window.open(e)
+  }
+
   return (
     <>
-      <Title>gitlab一键命名branch/tag</Title>
-      <TimeComponent title={'branch'} childStyle={{ width: 800, margin: '0 auto' }} />
-      <TimeComponent title={'tag'} childStyle={{ width: 800, margin: '20px auto 0' }} />
+      {contextHolder}
+      <Row gutter={16}>
+        <Col className="gutter-row" span={12}>
+          <Title>Gitlab快速命名branch/tag</Title>
+          <TimeComponent
+            title={'branch'}
+            childStyle={{ width: 800, margin: '0 auto' }}
+            sendName={getName}
+          />
+          <TimeComponent title={'tag'} childStyle={{ width: 800, margin: '20px auto 0' }} />
+        </Col>
+        <Col className="gutter-row" span={12}>
+          <Title>快速合并发布代码</Title>
+          <Card bordered={false} style={{ width: 800, margin: '0 auto' }}>
+            <Form name="basic" labelCol={{ span: 4 }} wrapperCol={{ span: 20 }} autoComplete="off">
+              <Form.Item label="当前分支">
+                <Input value={bname} onChange={(e) => bnameChange(e.target.value)} />
+              </Form.Item>
+              <Form.Item label="选择仓库系统">
+                <Select value={sname} onChange={storeChange} options={storeList} />
+              </Form.Item>
+              <Form.Item label="测试环境">
+                <TextArea value={betaMerge} rows={4} />
+                <Space>
+                  <Button
+                    style={{ marginTop: '10px' }}
+                    type="primary"
+                    onClick={() => copyLink(betaMerge)}
+                  >
+                    复制
+                  </Button>
+                  <Button
+                    style={{ marginTop: '10px' }}
+                    type="primary"
+                    onClick={() => openLink(betaMerge)}
+                  >
+                    打开链接
+                  </Button>
+                </Space>
+              </Form.Item>
+              <Form.Item label="生产环境">
+                <TextArea value={prodMerge} rows={4} />
+                <Space>
+                  <Button
+                    style={{ marginTop: '10px' }}
+                    type="primary"
+                    onClick={() => copyLink(prodMerge)}
+                  >
+                    复制
+                  </Button>
+                  <Button
+                    style={{ marginTop: '10px' }}
+                    type="primary"
+                    onClick={() => openLink(prodMerge)}
+                  >
+                    打开链接
+                  </Button>
+                </Space>
+              </Form.Item>
+            </Form>
+          </Card>
+        </Col>
+      </Row>
     </>
   )
 }
