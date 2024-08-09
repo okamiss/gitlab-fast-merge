@@ -149,8 +149,10 @@ const App: React.FC = () => {
   const [betaMerge, setBetaMerge] = useState('')
   const [prodMerge, setProdMerge] = useState('')
   const [bname, setBname] = useState('')
+  const [sname, setSname] = useState('')
+  const [cbname, setcbname] = useState('')
+  const [ctname, setctname] = useState('')
   // const [isinput, setIsinput] = useState(false)
-  const [sname, setSname] = useState('admin-crm')
   // const isInputRef = useRef(false)
 
   // useEffect(() => {
@@ -158,9 +160,9 @@ const App: React.FC = () => {
   // }, [isinput])
 
   const storeList = [
-    { value: 'admin-crm', label: 'crm' },
-    { value: 'admin-scrm', label: 'scrm' },
-    { value: 'web-wwside', label: '企微' }
+    { value: 'admin-crm', label: 'crm系统' },
+    { value: 'admin-scrm', label: 'scrm系统' },
+    { value: 'web-wwside', label: '企微侧边栏' }
   ]
 
   const storeMap = new Map([
@@ -170,16 +172,23 @@ const App: React.FC = () => {
   ])
 
   const createLink = (b: string, s: string) => {
-    const betaLink = `https://gitlab.techzgzb.cn/frontend/${s}/-/merge_requests/new?merge_request[source_project_id]=${storeMap.get(
+    const frontendUrl = 'https://gitlab.techzgzb.cn/frontend'
+
+    const betaLink = `${frontendUrl}/${s}/-/merge_requests/new?merge_request[source_project_id]=${storeMap.get(
       s
     )}&merge_request[source_branch]=${b}&merge_request[target_project_id]=${storeMap.get(
       s
     )}&merge_request[target_branch]=beta`
-
-    const prodLink = `https://gitlab.techzgzb.cn/frontend/${s}/-/merge_requests/new?merge_request[source_branch]=${b}`
-
     setBetaMerge(betaLink)
+
+    const prodLink = `${frontendUrl}/${s}/-/merge_requests/new?merge_request[source_branch]=${b}`
     setProdMerge(prodLink)
+
+    const createBranch = `${frontendUrl}/${s}/-/branches/new`
+    setcbname(createBranch)
+
+    const createTag = `${frontendUrl}/${s}/-/tags/new`
+    setctname(createTag)
   }
 
   // 仓库选择
@@ -213,28 +222,62 @@ const App: React.FC = () => {
   return (
     <>
       {contextHolder}
-      <Row gutter={16}>
+      <Row gutter={16} style={{ padding: '20px' }}>
         <Col className="gutter-row" span={12}>
           <Title>Gitlab快速命名branch/tag</Title>
-          <TimeComponent
-            title={'branch'}
-            childStyle={{ width: 800, margin: '0 auto' }}
-            sendName={getName}
-          />
-          <TimeComponent title={'tag'} childStyle={{ width: 800, margin: '20px auto 0' }} />
+          <TimeComponent title={'branch'} childStyle={{ margin: '0 auto' }} sendName={getName} />
+          <TimeComponent title={'tag'} childStyle={{ margin: '20px auto 0' }} />
         </Col>
         <Col className="gutter-row" span={12}>
-          <Title>快速合并发布代码</Title>
-          <Card bordered={false} style={{ width: 800, margin: '0 auto' }}>
+          <Title>Gitlab快速合并发布代码</Title>
+          <Card bordered={false} style={{ margin: '0 auto' }}>
             <Form name="basic" labelCol={{ span: 4 }} wrapperCol={{ span: 20 }} autoComplete="off">
-              <Form.Item label="当前分支">
+              <Form.Item label="合并分支">
                 <Input value={bname} onChange={(e) => bnameChange(e.target.value)} />
               </Form.Item>
               <Form.Item label="选择仓库系统">
                 {/* <Select value={sname} onChange={storeChange} options={storeList} /> */}
                 <Radio.Group value={sname} onChange={storeChange} options={storeList} />
               </Form.Item>
-              <Form.Item label="测试环境">
+              <Form.Item label="创建分支">
+                <Input value={cbname} />
+                <Space>
+                  <Button
+                    style={{ marginTop: '10px' }}
+                    type="primary"
+                    onClick={() => copyLink(cbname)}
+                  >
+                    复制
+                  </Button>
+                  <Button
+                    style={{ marginTop: '10px' }}
+                    type="primary"
+                    onClick={() => openLink(cbname)}
+                  >
+                    打开链接
+                  </Button>
+                </Space>
+              </Form.Item>
+              <Form.Item label="创建Tag">
+                <Input value={ctname} />
+                <Space>
+                  <Button
+                    style={{ marginTop: '10px' }}
+                    type="primary"
+                    onClick={() => copyLink(ctname)}
+                  >
+                    复制
+                  </Button>
+                  <Button
+                    style={{ marginTop: '10px' }}
+                    type="primary"
+                    onClick={() => openLink(ctname)}
+                  >
+                    打开链接
+                  </Button>
+                </Space>
+              </Form.Item>
+              <Form.Item label="合并到测试环境">
                 <TextArea value={betaMerge} rows={4} />
                 <Space>
                   <Button
@@ -253,7 +296,7 @@ const App: React.FC = () => {
                   </Button>
                 </Space>
               </Form.Item>
-              <Form.Item label="生产环境">
+              <Form.Item label="合并到生产环境">
                 <TextArea value={prodMerge} rows={4} />
                 <Space>
                   <Button
