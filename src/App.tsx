@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Card, Input, Col, Row, Button, Checkbox, Form, Select, message, Space } from 'antd'
-import type { GetProp } from 'antd'
+import { Card, Input, Col, Row, Button, Checkbox, Form, Select, message, Space, Radio } from 'antd'
+import type { GetProp, RadioChangeEvent } from 'antd'
 
 import { Title, Preview } from './app-style'
 import dayjs from 'dayjs'
@@ -183,9 +183,9 @@ const App: React.FC = () => {
   }
 
   // 仓库选择
-  const storeChange = (e: string) => {
-    setSname(e)
-    createLink(bname, e)
+  const storeChange = ({ target: { value } }: RadioChangeEvent) => {
+    setSname(value)
+    createLink(bname, value)
   }
 
   const getName = (e: string) => {
@@ -231,7 +231,8 @@ const App: React.FC = () => {
                 <Input value={bname} onChange={(e) => bnameChange(e.target.value)} />
               </Form.Item>
               <Form.Item label="选择仓库系统">
-                <Select value={sname} onChange={storeChange} options={storeList} />
+                {/* <Select value={sname} onChange={storeChange} options={storeList} /> */}
+                <Radio.Group value={sname} onChange={storeChange} options={storeList} />
               </Form.Item>
               <Form.Item label="测试环境">
                 <TextArea value={betaMerge} rows={4} />
