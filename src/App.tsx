@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Card, Input, Col, Row, Button, Checkbox, Form, Select, message, Space, Radio } from 'antd'
 import type { GetProp, RadioChangeEvent } from 'antd'
 
@@ -188,7 +188,7 @@ const App: React.FC = () => {
     createLink(bname, value)
   }
 
-  const getName = (e: string) => {
+  const getName = () => {
     // if (isInputRef.current.isinput) return
     // setBname(e)
     // createLink()
