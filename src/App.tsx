@@ -110,7 +110,7 @@ const TimeComponent: React.FC<{ title: string; childStyle: object; sendName?: an
                 )}
               </Form.Item>
             </Col>
-            <Col span={10}>
+            <Col span={11}>
               <Form.Item
                 name="time"
                 label={
