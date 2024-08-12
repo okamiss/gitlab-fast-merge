@@ -106,7 +106,7 @@ const TimeComponent: React.FC<{ title: string; childStyle: object; sendName?: an
                     ]}
                   />
                 ) : (
-                  <Input onChange={(e) => trimFormat('preVal', e)} placeholder="前缀" />
+                  <Input onChange={(e) => trimFormat('preVal', e)} placeholder="前缀" allowClear />
                 )}
               </Form.Item>
             </Col>
@@ -125,7 +125,7 @@ const TimeComponent: React.FC<{ title: string; childStyle: object; sendName?: an
             </Col>
             <Col span={5}>
               <Form.Item label="后缀" name="sufVal">
-                <Input onChange={(e) => trimFormat('sufVal', e)} placeholder="后缀" />
+                <Input onChange={(e) => trimFormat('sufVal', e)} placeholder="后缀" allowClear />
               </Form.Item>
             </Col>
 
@@ -239,7 +239,7 @@ const App: React.FC = () => {
           <Card bordered={false} style={{ margin: '0 auto' }}>
             <Form name="basic" labelCol={{ span: 4 }} wrapperCol={{ span: 20 }} autoComplete="off">
               <Form.Item label="合并分支">
-                <Input value={bname} onChange={(e) => bnameChange(e.target.value)} />
+                <Input value={bname} onChange={(e) => bnameChange(e.target.value)} allowClear />
               </Form.Item>
               <Form.Item label="选择仓库系统">
                 {/* <Select value={sname} onChange={storeChange} options={storeList} /> */}
