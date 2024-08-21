@@ -1,10 +1,25 @@
 import React, { useEffect, useState } from 'react'
-import { Card, Input, Col, Row, Button, Checkbox, Form, Select, message, Space, Radio } from 'antd'
+import {
+  Card,
+  Input,
+  Col,
+  Row,
+  Button,
+  Checkbox,
+  Form,
+  Select,
+  message,
+  Space,
+  Radio,
+  Table
+} from 'antd'
 import type { GetProp, RadioChangeEvent } from 'antd'
 
 import { Title, Preview } from './app-style'
 import dayjs from 'dayjs'
 import copy from 'clipboard-copy'
+import { v4 as uuidv4 } from 'uuid'
+
 const { TextArea } = Input
 
 type CheckboxValueType = GetProp<typeof Checkbox.Group, 'value'>[number]
@@ -30,17 +45,19 @@ const generateTime = (checkedList: any) => {
   return str1 + str2 + str3
 }
 
-const TimeComponent: React.FC<{ title: string; childStyle: object; sendName?: any }> = ({
-  title,
-  childStyle,
-  sendName
-}) => {
+const TimeComponent: React.FC<{
+  title: string
+  childStyle: object
+  sendName?: any
+  updateBranch?: any
+}> = ({ title, childStyle, sendName, updateBranch }) => {
   const [messageApi, contextHolder] = message.useMessage()
   const [form] = Form.useForm()
   const [checkedList, setCheckedList] = useState<CheckboxValueType[]>(
     title === 'tag' ? defaultCheckedListTag : defaultCheckedList
   )
   const [preview, setPreview] = useState('')
+  const [description, setDescription] = useState('')
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -76,6 +93,27 @@ const TimeComponent: React.FC<{ title: string; childStyle: object; sendName?: an
   const onFinish = () => {
     copy(preview)
     messageApi.success('复制成功')
+  }
+
+  // 暂存分支
+  const saveBranch = () => {
+    const params = {
+      id: uuidv4(),
+      branch: preview,
+      description
+    }
+
+    const getTable = localStorage.getItem('table')
+
+    if (getTable) {
+      const oldTable = JSON.parse(getTable)
+      const newTable = [params, ...oldTable]
+      updateBranch(newTable)
+      localStorage.setItem('table', JSON.stringify(newTable))
+    } else {
+      updateBranch([params])
+      localStorage.setItem('table', JSON.stringify([params]))
+    }
   }
 
   return (
@@ -139,6 +177,19 @@ const TimeComponent: React.FC<{ title: string; childStyle: object; sendName?: an
           </Row>
         </Form>
         <Preview>预览：{preview}</Preview>
+        {title === 'branch' ? (
+          <Space>
+            <Button type="primary" onClick={saveBranch}>
+              暂存分支
+            </Button>
+            <Input
+              onChange={(e) => setDescription(e.target.value)}
+              style={{ width: '500px' }}
+              placeholder="暂存分支描述信息，可选，方便后面导入合并模块"
+              allowClear
+            />
+          </Space>
+        ) : null}
       </Card>
     </>
   )
@@ -152,12 +203,20 @@ const App: React.FC = () => {
   const [sname, setSname] = useState('')
   const [cbname, setcbname] = useState('')
   const [ctname, setctname] = useState('')
+  const [dataSource, setdataSource] = useState<branchlist[]>([])
   // const [isinput, setIsinput] = useState(false)
   // const isInputRef = useRef(false)
 
   // useEffect(() => {
   //   isInputRef.current = isinput
   // }, [isinput])
+
+  useEffect(() => {
+    const getTable = localStorage.getItem('table')
+    if (getTable) {
+      setdataSource(JSON.parse(getTable))
+    }
+  }, [])
 
   const storeList = [
     { value: 'admin-crm', label: 'crm系统' },
@@ -225,20 +284,66 @@ const App: React.FC = () => {
     window.open(e)
   }
 
+  const columns = [
+    {
+      title: '分支名',
+      dataIndex: 'branch'
+    },
+    {
+      title: '描述信息',
+      dataIndex: 'description'
+    },
+    {
+      title: '操作',
+      render: (_: any, record: any) => (
+        <Space>
+          <Button type="link" onClick={() => bnameChange(record.branch)}>
+            导入分支
+          </Button>
+          <Button type="link" danger onClick={() => delBranch(record.id)}>
+            删除
+          </Button>
+        </Space>
+      )
+    }
+  ]
+
+  
+
+  // 删除分支
+  const delBranch = (e: string) => {
+    console.log(e)
+    const newTable = dataSource.filter((item) => item.id !== e)
+    setdataSource(newTable)
+    localStorage.setItem('table', JSON.stringify(newTable))
+  }
+
+  // 更新分支
+  const getUpdate = (e: branchlist[]) => {
+    setdataSource(e)
+  }
+
   return (
     <>
       {contextHolder}
       <Row gutter={16} style={{ padding: '20px' }}>
         <Col className="gutter-row" span={12}>
           <Title>Gitlab快速命名branch/tag</Title>
-          <TimeComponent title={'branch'} childStyle={{ margin: '0 auto' }} sendName={getName} />
+          <TimeComponent
+            title={'branch'}
+            childStyle={{ margin: '0 auto' }}
+            sendName={getName}
+            updateBranch={getUpdate}
+          />
           <TimeComponent title={'tag'} childStyle={{ margin: '20px auto 0' }} />
+          <Title>暂存分支列表</Title>
+          <Table bordered rowKey="id" dataSource={dataSource} columns={columns} />
         </Col>
         <Col className="gutter-row" span={12}>
           <Title>Gitlab快速合并发布代码</Title>
           <Card bordered={false} style={{ margin: '0 auto' }}>
             <Form name="basic" labelCol={{ span: 4 }} wrapperCol={{ span: 20 }} autoComplete="off">
-              <Form.Item label="合并分支">
+              <Form.Item label="分支名">
                 <Input value={bname} onChange={(e) => bnameChange(e.target.value)} allowClear />
               </Form.Item>
               <Form.Item label="选择仓库系统">
