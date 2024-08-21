@@ -123,9 +123,11 @@ const TimeComponent: React.FC<{
 
       updateBranch(newTable)
       localStorage.setItem('table', JSON.stringify(newTable))
+      messageApi.success('暂存成功')
     } else {
       updateBranch([params])
       localStorage.setItem('table', JSON.stringify([params]))
+      messageApi.success('暂存成功')
     }
   }
 
