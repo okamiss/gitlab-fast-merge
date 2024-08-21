@@ -13,12 +13,13 @@ import {
   Radio,
   Table
 } from 'antd'
-import type { GetProp, RadioChangeEvent } from 'antd'
+import type { GetProp } from 'antd'
 
-import { Title, Preview } from './app-style'
+import { Title, Preview, Title2 } from './app-style'
 import dayjs from 'dayjs'
 import copy from 'clipboard-copy'
 import { v4 as uuidv4 } from 'uuid'
+import { storeList } from './common/select'
 
 const { TextArea } = Input
 
@@ -58,6 +59,7 @@ const TimeComponent: React.FC<{
   )
   const [preview, setPreview] = useState('')
   const [description, setDescription] = useState('')
+  const [sname, setSname] = useState('admin-crm')
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -97,9 +99,12 @@ const TimeComponent: React.FC<{
 
   // 暂存分支
   const saveBranch = () => {
+    // const getSLablename = storeList.find((item) => item.value === sname)?.label
+
     const params = {
       id: uuidv4(),
       branch: preview,
+      storeName: sname,
       description
     }
 
@@ -108,12 +113,24 @@ const TimeComponent: React.FC<{
     if (getTable) {
       const oldTable = JSON.parse(getTable)
       const newTable = [params, ...oldTable]
+      const isUse = oldTable.some(
+        (item: any) => item.branch === preview && item.storeName === sname
+      )
+
+      if (isUse) {
+        return messageApi.error(`${sname}仓库已存在(${preview})分支`)
+      }
+
       updateBranch(newTable)
       localStorage.setItem('table', JSON.stringify(newTable))
     } else {
       updateBranch([params])
       localStorage.setItem('table', JSON.stringify([params]))
     }
+  }
+
+  const handleChange = (e: string) => {
+    setSname(e)
   }
 
   return (
@@ -180,13 +197,19 @@ const TimeComponent: React.FC<{
         {title === 'branch' ? (
           <Space>
             <Button type="primary" onClick={saveBranch}>
-              暂存分支
+              暂存
             </Button>
             <Input
+              style={{ width: 480 }}
               onChange={(e) => setDescription(e.target.value)}
-              style={{ width: '500px' }}
-              placeholder="暂存分支描述信息，可选，方便后面导入合并模块"
+              placeholder="暂存分支描述信息，该分支对应需求说明"
               allowClear
+            />
+            <Select
+              style={{ width: 150 }}
+              value={sname}
+              onChange={handleChange}
+              options={storeList}
             />
           </Space>
         ) : null}
@@ -212,26 +235,23 @@ const App: React.FC = () => {
   // }, [isinput])
 
   useEffect(() => {
+    storeChange('admin-crm')
     const getTable = localStorage.getItem('table')
     if (getTable) {
       setdataSource(JSON.parse(getTable))
     }
   }, [])
 
-  const storeList = [
-    { value: 'admin-crm', label: 'crm系统' },
-    { value: 'admin-scrm', label: 'scrm系统' },
-    { value: 'web-wwside', label: '企微侧边栏' }
-  ]
-
-  const storeMap = new Map([
-    ['admin-crm', 4],
-    ['admin-scrm', 10],
-    ['web-wwside', 16]
-  ])
+  // const storeMap = new Map([
+  //   ['admin-crm', 4],
+  //   ['admin-scrm', 10],
+  //   ['web-wwside', 16]
+  // ])
 
   const createLink = (b: string, s: string) => {
     if (!s) return
+
+    const getSid = storeList.find((item) => item.value === s)?.id
 
     const frontendUrl = 'https://gitlab.techzgzb.cn/frontend'
     const createBranch = `${frontendUrl}/${s}/-/branches/new`
@@ -245,11 +265,7 @@ const App: React.FC = () => {
       setProdMerge('')
       return
     }
-    const betaLink = `${frontendUrl}/${s}/-/merge_requests/new?merge_request[source_project_id]=${storeMap.get(
-      s
-    )}&merge_request[source_branch]=${b}&merge_request[target_project_id]=${storeMap.get(
-      s
-    )}&merge_request[target_branch]=beta`
+    const betaLink = `${frontendUrl}/${s}/-/merge_requests/new?merge_request[source_project_id]=${getSid}&merge_request[source_branch]=${b}&merge_request[target_project_id]=${getSid}&merge_request[target_branch]=beta`
     setBetaMerge(betaLink)
 
     const prodLink = `${frontendUrl}/${s}/-/merge_requests/new?merge_request[source_branch]=${b}`
@@ -257,7 +273,7 @@ const App: React.FC = () => {
   }
 
   // 仓库选择
-  const storeChange = ({ target: { value } }: RadioChangeEvent) => {
+  const storeChange = (value: string) => {
     setSname(value)
     createLink(bname, value)
   }
@@ -266,6 +282,13 @@ const App: React.FC = () => {
     // if (isInputRef.current.isinput) return
     // setBname(e)
     // createLink()
+  }
+
+  const importBranch = (value: branchlist) => {
+    const { branch, storeName } = value
+    setBname(branch)
+    setSname(storeName)
+    createLink(branch, storeName)
   }
 
   // 分支名输入
@@ -290,6 +313,10 @@ const App: React.FC = () => {
       dataIndex: 'branch'
     },
     {
+      title: '所属仓库',
+      dataIndex: 'storeName'
+    },
+    {
       title: '描述信息',
       dataIndex: 'description'
     },
@@ -297,7 +324,7 @@ const App: React.FC = () => {
       title: '操作',
       render: (_: any, record: any) => (
         <Space>
-          <Button type="link" onClick={() => bnameChange(record.branch)}>
+          <Button type="link" onClick={() => importBranch(record)}>
             导入分支
           </Button>
           <Button type="link" danger onClick={() => delBranch(record.id)}>
@@ -308,11 +335,8 @@ const App: React.FC = () => {
     }
   ]
 
-  
-
   // 删除分支
   const delBranch = (e: string) => {
-    console.log(e)
     const newTable = dataSource.filter((item) => item.id !== e)
     setdataSource(newTable)
     localStorage.setItem('table', JSON.stringify(newTable))
@@ -336,7 +360,7 @@ const App: React.FC = () => {
             updateBranch={getUpdate}
           />
           <TimeComponent title={'tag'} childStyle={{ margin: '20px auto 0' }} />
-          <Title>暂存分支列表</Title>
+          <Title2>暂存分支列表</Title2>
           <Table bordered rowKey="id" dataSource={dataSource} columns={columns} />
         </Col>
         <Col className="gutter-row" span={12}>
@@ -346,9 +370,12 @@ const App: React.FC = () => {
               <Form.Item label="分支名">
                 <Input value={bname} onChange={(e) => bnameChange(e.target.value)} allowClear />
               </Form.Item>
-              <Form.Item label="选择仓库系统">
-                {/* <Select value={sname} onChange={storeChange} options={storeList} /> */}
-                <Radio.Group value={sname} onChange={storeChange} options={storeList} />
+              <Form.Item label="代码仓库">
+                <Radio.Group
+                  value={sname}
+                  onChange={(e) => storeChange(e.target.value)}
+                  options={storeList}
+                />
               </Form.Item>
               <Form.Item label="创建分支">
                 <Input value={cbname} />
