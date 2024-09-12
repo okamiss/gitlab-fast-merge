@@ -3,6 +3,5 @@ interface branchlist {
   branch: string
   storeName: string
   description: string
-  modiy:boolean
+  modiy: boolean
 }
-
