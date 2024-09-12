@@ -13,7 +13,7 @@ import {
   Radio,
   Table
 } from 'antd'
-import type { GetProp } from 'antd'
+import type { GetProp, TableColumnsType } from 'antd'
 
 import { Title, Preview, Title2 } from './app-style'
 import dayjs from 'dayjs'
@@ -103,6 +103,7 @@ const TimeComponent: React.FC<{
 
     const params = {
       id: uuidv4(),
+      modiy: false,
       branch: preview,
       storeName: sname,
       description
@@ -286,6 +287,7 @@ const App: React.FC = () => {
     // createLink()
   }
 
+  // 导入分支
   const importBranch = (value: branchlist) => {
     const { branch, storeName } = value
     setBname(branch)
@@ -309,26 +311,50 @@ const App: React.FC = () => {
     window.open(e)
   }
 
-  const columns = [
+  const columns: TableColumnsType<branchlist> = [
     {
       title: '分支名',
+      width: 150,
       dataIndex: 'branch'
     },
     {
       title: '所属仓库',
+      width: 120,
       dataIndex: 'storeName'
     },
     {
       title: '描述信息',
-      dataIndex: 'description'
+      // dataIndex: 'description'
+      render: (_: any, record: any, index) =>
+        record.modiy ? (
+          <Input
+            value={record.description}
+            onChange={(e) => dirChange(e.target.value, index)}
+            onKeyUp={(e) => e.key === 'Enter' && save(record, index)}
+          />
+        ) : (
+          <span>{record.description}</span>
+        )
     },
     {
       title: '操作',
-      render: (_: any, record: any) => (
+      fixed: 'right',
+      width: 250,
+      render: (_: any, record: any, index: number) => (
         <Space>
           <Button type="link" onClick={() => importBranch(record)}>
             导入分支
           </Button>
+          {record.modiy ? (
+            <Button type="link" onClick={() => save(record, index)}>
+              保存
+            </Button>
+          ) : (
+            <Button type="link" onClick={() => modiy(record, index)}>
+              修改
+            </Button>
+          )}
+
           <Button type="link" danger onClick={() => delBranch(record.id)}>
             删除
           </Button>
@@ -336,6 +362,26 @@ const App: React.FC = () => {
       )
     }
   ]
+
+  const dirChange = (e: string, index: number) => {
+    const saveData = JSON.parse(JSON.stringify(dataSource))
+    saveData[index].description = e
+    setdataSource(saveData)
+  }
+  // 保存
+  const save = (value: branchlist, index: number) => {
+    const saveData = JSON.parse(JSON.stringify(dataSource))
+    saveData[index].modiy = !value.modiy
+    setdataSource(saveData)
+    localStorage.setItem('table', JSON.stringify(saveData))
+  }
+
+  // 修改
+  const modiy = (value: branchlist, index: number) => {
+    const modiyData = JSON.parse(JSON.stringify(dataSource))
+    modiyData[index].modiy = !value.modiy
+    setdataSource(modiyData)
+  }
 
   // 删除分支
   const delBranch = (e: string) => {
