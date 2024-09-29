@@ -322,7 +322,7 @@ const App: React.FC = () => {
       title: '代码仓库',
       width: 120,
       // dataIndex: 'storeName'，
-      render: (_: any, record: any, index) => {
+      render: (_: any, record: any) => {
         const getSLablename = storeList.find((item) => item.value === record.storeName)?.label
         return <span>{getSLablename}</span>
       }
