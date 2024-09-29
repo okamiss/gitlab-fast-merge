@@ -99,7 +99,7 @@ const TimeComponent: React.FC<{
 
   // 暂存分支
   const saveBranch = () => {
-    // const getSLablename = storeList.find((item) => item.value === sname)?.label
+    const getSLablename = storeList.find((item) => item.value === sname)?.label
 
     const params = {
       id: uuidv4(),
@@ -119,7 +119,7 @@ const TimeComponent: React.FC<{
       )
 
       if (isUse) {
-        return messageApi.error(`${sname}仓库已存在(${preview})分支`)
+        return messageApi.error(`${getSLablename}仓库已存在(${preview})分支,请尝试编辑修改！`)
       }
 
       updateBranch(newTable)
@@ -205,6 +205,7 @@ const TimeComponent: React.FC<{
             <Input
               style={{ width: 480 }}
               onChange={(e) => setDescription(e.target.value)}
+              onKeyUp={(e) => e.key === 'Enter' && saveBranch()}
               placeholder="暂存分支描述信息，该分支对应需求说明"
               allowClear
             />
@@ -318,9 +319,13 @@ const App: React.FC = () => {
       dataIndex: 'branch'
     },
     {
-      title: '所属仓库',
+      title: '代码仓库',
       width: 120,
-      dataIndex: 'storeName'
+      // dataIndex: 'storeName'，
+      render: (_: any, record: any, index) => {
+        const getSLablename = storeList.find((item) => item.value === record.storeName)?.label
+        return <span>{getSLablename}</span>
+      }
     },
     {
       title: '描述信息',
