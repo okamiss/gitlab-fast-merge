@@ -198,24 +198,29 @@ const TimeComponent: React.FC<{
         </Form>
         <Preview>预览：{preview}</Preview>
         {title === 'branch' ? (
-          <Space>
-            <Button type="primary" onClick={saveBranch}>
-              暂存
-            </Button>
-            <Input
-              style={{ width: 480 }}
-              onChange={(e) => setDescription(e.target.value)}
-              onKeyUp={(e) => e.key === 'Enter' && saveBranch()}
-              placeholder="暂存分支描述信息，该分支对应需求说明"
-              allowClear
-            />
-            <Select
-              style={{ width: 150 }}
-              value={sname}
-              onChange={handleChange}
-              options={storeList}
-            />
-          </Space>
+          <Row gutter={5}>
+            <Col span={16}>
+              <Input
+                onChange={(e) => setDescription(e.target.value)}
+                onKeyUp={(e) => e.key === 'Enter' && saveBranch()}
+                placeholder="暂存分支描述信息，该分支对应需求说明"
+                allowClear
+              />
+            </Col>
+            <Col span={5}>
+              <Select
+                style={{ width: '100%' }}
+                value={sname}
+                onChange={handleChange}
+                options={storeList}
+              />
+            </Col>
+            <Col span={3}>
+              <Button type="primary" onClick={saveBranch}>
+                暂存
+              </Button>
+            </Col>
+          </Row>
         ) : null}
       </Card>
     </>
