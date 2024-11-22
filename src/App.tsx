@@ -125,10 +125,12 @@ const TimeComponent: React.FC<{
       updateBranch(newTable)
       localStorage.setItem('table', JSON.stringify(newTable))
       messageApi.success('暂存成功')
+      setDescription('')
     } else {
       updateBranch([params])
       localStorage.setItem('table', JSON.stringify([params]))
       messageApi.success('暂存成功')
+      setDescription('')
     }
   }
 
@@ -201,6 +203,7 @@ const TimeComponent: React.FC<{
           <Row gutter={5}>
             <Col span={16}>
               <Input
+                value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 onKeyUp={(e) => e.key === 'Enter' && saveBranch()}
                 placeholder="暂存分支描述信息，该分支对应需求说明"
