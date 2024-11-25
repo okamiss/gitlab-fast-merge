@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import {
   Card,
   Input,
@@ -11,15 +11,19 @@ import {
   message,
   Space,
   Radio,
-  Table
+  Table,
+  ConfigProvider,
+  theme,
+  Switch,
+  Tag
 } from 'antd'
 import type { GetProp, TableColumnsType } from 'antd'
 
-import { Title, Preview, Title2 } from './app-style'
+import { Title, Preview } from './app-style'
 import dayjs from 'dayjs'
 import copy from 'clipboard-copy'
 import { v4 as uuidv4 } from 'uuid'
-import { storeList } from './common/select'
+import { progressList, storeList } from './common/select'
 
 const { TextArea } = Input
 
@@ -103,6 +107,7 @@ const TimeComponent: React.FC<{
 
     const params = {
       id: uuidv4(),
+      progress: 1,
       modiy: false,
       branch: preview,
       storeName: sname,
@@ -245,6 +250,14 @@ const App: React.FC = () => {
   // useEffect(() => {
   //   isInputRef.current = isinput
   // }, [isinput])
+  const [darkTheme, setDarkTheme] = useState(false)
+
+  useEffect(() => {
+    const isDark = localStorage.getItem('theme-dark')
+    if (isDark === 'true') {
+      switchChange(true)
+    }
+  })
 
   useEffect(() => {
     storeChange('admin-crm')
@@ -320,6 +333,20 @@ const App: React.FC = () => {
     window.open(e)
   }
 
+  const ProComputed: React.FC<{
+    value: number
+  }> = ({ value }) => {
+    const colorMap: Record<number, string> = {
+      1: '#108ee9',
+      2: '#8e44ad',
+      3: '#27ae60',
+      4: '#7f8c8d'
+    }
+    const color = colorMap[value]
+    const progressName = progressList.find((item) => item.value === value)?.label
+    return <Tag color={color}>{progressName}</Tag>
+  }
+
   const columns: TableColumnsType<branchlist> = [
     {
       title: '分支名',
@@ -350,6 +377,22 @@ const App: React.FC = () => {
         )
     },
     {
+      title: '进度',
+      width: 120,
+      render: (_: any, record: any, index) => {
+        return record.modiy ? (
+          <Select
+            onChange={(e) => proChange(e, index)}
+            style={{ width: '100%' }}
+            value={record.progress}
+            options={progressList}
+          />
+        ) : (
+          <ProComputed value={record.progress} />
+        )
+      }
+    },
+    {
       title: '操作',
       fixed: 'right',
       width: 250,
@@ -375,6 +418,11 @@ const App: React.FC = () => {
       )
     }
   ]
+  const proChange = (e: number, index: number) => {
+    const saveData = JSON.parse(JSON.stringify(dataSource))
+    saveData[index].progress = e
+    setdataSource(saveData)
+  }
 
   const dirChange = (e: string, index: number) => {
     const saveData = JSON.parse(JSON.stringify(dataSource))
@@ -408,8 +456,19 @@ const App: React.FC = () => {
     setdataSource(e)
   }
 
+  const switchChange = (e: boolean) => {
+    setDarkTheme(e)
+    document.body.classList.toggle('dark', e)
+    localStorage.setItem('theme-dark', JSON.stringify(e))
+  }
+
   return (
-    <>
+    <ConfigProvider
+      theme={{
+        algorithm: darkTheme ? theme.darkAlgorithm : theme.defaultAlgorithm
+      }}
+    >
+      {/* <button onClick={toggleTheme}>Toggle Theme</button> */}
       {contextHolder}
       <Row gutter={16} style={{ padding: '20px' }}>
         <Col className="gutter-row" span={12}>
@@ -421,11 +480,11 @@ const App: React.FC = () => {
             updateBranch={getUpdate}
           />
           <TimeComponent title={'tag'} childStyle={{ margin: '20px auto 0' }} />
-          <Title2>暂存分支列表</Title2>
+          <Title>暂存分支列表→导入到右侧发布</Title>
           <Table bordered rowKey="id" dataSource={dataSource} columns={columns} />
         </Col>
         <Col className="gutter-row" span={12}>
-          <Title>Gitlab快速合并发布代码</Title>
+          <Title>Gitlab快速合并发布代码</Title>、
           <Card bordered={false} style={{ margin: '0 auto' }}>
             <Form name="basic" labelCol={{ span: 4 }} wrapperCol={{ span: 20 }} autoComplete="off">
               <Form.Item label="分支名">
@@ -516,9 +575,22 @@ const App: React.FC = () => {
               </Form.Item>
             </Form>
           </Card>
+          <Title>设置</Title>
+          <Card bordered={false} style={{ margin: '0 auto' }}>
+            <Form labelCol={{ span: 4 }} wrapperCol={{ span: 20 }} autoComplete="off">
+              <Form.Item label="暗黑主题">
+                <Switch
+                  checkedChildren="开启"
+                  unCheckedChildren="关闭"
+                  value={darkTheme}
+                  onChange={switchChange}
+                />
+              </Form.Item>
+            </Form>
+          </Card>
         </Col>
       </Row>
-    </>
+    </ConfigProvider>
   )
 }
 
