@@ -55,7 +55,8 @@ const TimeComponent: React.FC<{
   childStyle: object
   sendName?: any
   updateBranch?: any
-}> = ({ title, childStyle, sendName, updateBranch }) => {
+  defPre?: string
+}> = ({ title, childStyle, sendName, updateBranch, defPre }) => {
   const [messageApi, contextHolder] = message.useMessage()
   const [form] = Form.useForm()
   const [checkedList, setCheckedList] = useState<CheckboxValueType[]>(
@@ -66,8 +67,15 @@ const TimeComponent: React.FC<{
   const [sname, setSname] = useState('admin-crm')
 
   useEffect(() => {
+    if (title === 'branch') {
+      trimFormat('preVal', defPre as string)
+    }
+  }, [defPre])
+
+  useEffect(() => {
     const timer = setInterval(() => {
       form.setFieldValue('time', generateTime(checkedList))
+
       getChange()
     }, 1000)
     return () => clearInterval(timer)
@@ -90,8 +98,8 @@ const TimeComponent: React.FC<{
   }
 
   // 去除空格
-  const trimFormat = (name: string, e: React.ChangeEvent<HTMLInputElement>) => {
-    const trimValue = e.target.value.trim()
+  const trimFormat = (name: string, e: string) => {
+    const trimValue = e.trim()
     form.setFieldValue(name, trimValue)
   }
 
@@ -146,6 +154,7 @@ const TimeComponent: React.FC<{
   return (
     <>
       {contextHolder}
+
       <Card title={`${title}命名`} bordered={false} style={childStyle}>
         <Form
           form={form}
@@ -153,7 +162,7 @@ const TimeComponent: React.FC<{
           onFinish={onFinish}
           onFieldsChange={getChange}
           initialValues={{
-            preVal: `${title === 'tag' ? 'prod' : 'hyl'}`,
+            preVal: `${title === 'tag' ? 'prod' : ''}`,
             time: dayjs(new Date()).format('YYYYMMDD'),
             sufVal: ''
           }}
@@ -171,7 +180,11 @@ const TimeComponent: React.FC<{
                     ]}
                   />
                 ) : (
-                  <Input onChange={(e) => trimFormat('preVal', e)} placeholder="前缀" allowClear />
+                  <Input
+                    onChange={(e) => trimFormat('preVal', e.target.value)}
+                    placeholder="前缀"
+                    allowClear
+                  />
                 )}
               </Form.Item>
             </Col>
@@ -190,7 +203,11 @@ const TimeComponent: React.FC<{
             </Col>
             <Col span={5}>
               <Form.Item label="后缀" name="sufVal">
-                <Input onChange={(e) => trimFormat('sufVal', e)} placeholder="后缀" allowClear />
+                <Input
+                  onChange={(e) => trimFormat('sufVal', e.target.value)}
+                  placeholder="后缀"
+                  allowClear
+                />
               </Form.Item>
             </Col>
 
@@ -244,6 +261,9 @@ const App: React.FC = () => {
   const [cbname, setcbname] = useState('')
   const [ctname, setctname] = useState('')
   const [dataSource, setdataSource] = useState<branchlist[]>([])
+  const [defaultprefix, setDefaultprefix] = useState(
+    localStorage.getItem('defaultprefix') as string
+  )
   // const [isinput, setIsinput] = useState(false)
   // const isInputRef = useRef(false)
 
@@ -254,6 +274,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const isDark = localStorage.getItem('theme-dark')
+
     if (isDark === 'true') {
       switchChange(true)
     }
@@ -324,15 +345,18 @@ const App: React.FC = () => {
     createLink(e, sname)
   }
 
+  // 复制链接
   const copyLink = (e: string) => {
     copy(e)
     messageApi.success('复制成功')
   }
 
+  // 打开链接
   const openLink = (e: string) => {
     window.open(e)
   }
 
+  // 进度展示组件
   const ProComputed: React.FC<{
     value: number
   }> = ({ value }) => {
@@ -456,10 +480,17 @@ const App: React.FC = () => {
     setdataSource(e)
   }
 
+  // 开启暗黑主题
   const switchChange = (e: boolean) => {
     setDarkTheme(e)
     document.body.classList.toggle('dark', e)
     localStorage.setItem('theme-dark', JSON.stringify(e))
+  }
+
+  // 保存默认前缀
+  const saveDefaultprefix = (e: string) => {
+    setDefaultprefix(e)
+    localStorage.setItem('defaultprefix', e)
   }
 
   return (
@@ -468,7 +499,6 @@ const App: React.FC = () => {
         algorithm: darkTheme ? theme.darkAlgorithm : theme.defaultAlgorithm
       }}
     >
-      {/* <button onClick={toggleTheme}>Toggle Theme</button> */}
       {contextHolder}
       <Row gutter={16} style={{ padding: '20px' }}>
         <Col className="gutter-row" span={12}>
@@ -477,6 +507,7 @@ const App: React.FC = () => {
             title={'branch'}
             childStyle={{ margin: '0 auto' }}
             sendName={getName}
+            defPre={defaultprefix}
             updateBranch={getUpdate}
           />
           <TimeComponent title={'tag'} childStyle={{ margin: '20px auto 0' }} />
@@ -584,6 +615,15 @@ const App: React.FC = () => {
                   unCheckedChildren="关闭"
                   value={darkTheme}
                   onChange={switchChange}
+                />
+              </Form.Item>
+              <Form.Item label="默认分支前缀">
+                <Input
+                  style={{ width: '250px' }}
+                  value={defaultprefix}
+                  onChange={(e) => saveDefaultprefix(e.target.value)}
+                  allowClear
+                  placeholder="用于分支默认前缀"
                 />
               </Form.Item>
             </Form>
