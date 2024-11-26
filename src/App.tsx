@@ -515,7 +515,7 @@ const App: React.FC = () => {
           <Table bordered rowKey="id" dataSource={dataSource} columns={columns} />
         </Col>
         <Col className="gutter-row" span={12}>
-          <Title>Gitlab快速合并发布代码</Title>、
+          <Title>Gitlab快速合并发布代码</Title>
           <Card bordered={false} style={{ margin: '0 auto' }}>
             <Form name="basic" labelCol={{ span: 4 }} wrapperCol={{ span: 20 }} autoComplete="off">
               <Form.Item label="分支名">
