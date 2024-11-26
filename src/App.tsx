@@ -67,8 +67,8 @@ const TimeComponent: React.FC<{
   const [sname, setSname] = useState('admin-crm')
 
   useEffect(() => {
-    if (title === 'branch' && defPre) {
-      trimFormat('preVal', defPre)
+    if (title === 'branch') {
+      trimFormat('preVal', defPre || '')
     }
   }, [defPre])
 
