@@ -154,7 +154,6 @@ const TimeComponent: React.FC<{
   return (
     <>
       {contextHolder}
-
       <Card title={`${title}命名`} bordered={false} style={childStyle}>
         <Form
           form={form}
@@ -274,7 +273,6 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const isDark = localStorage.getItem('theme-dark')
-
     if (isDark === 'true') {
       switchChange(true)
     }
@@ -298,11 +296,9 @@ const App: React.FC = () => {
     if (!s) return
 
     const getSid = storeList.find((item) => item.value === s)?.id
-
     const frontendUrl = 'https://gitlab.techzgzb.cn/frontend'
     const createBranch = `${frontendUrl}/${s}/-/branches/new`
     setcbname(createBranch)
-
     const createTag = `${frontendUrl}/${s}/-/tags/new`
     setctname(createTag)
 
@@ -311,9 +307,9 @@ const App: React.FC = () => {
       setProdMerge('')
       return
     }
+
     const betaLink = `${frontendUrl}/${s}/-/merge_requests/new?merge_request[source_project_id]=${getSid}&merge_request[source_branch]=${b}&merge_request[target_project_id]=${getSid}&merge_request[target_branch]=beta`
     setBetaMerge(betaLink)
-
     const prodLink = `${frontendUrl}/${s}/-/merge_requests/new?merge_request[source_branch]=${b}`
     setProdMerge(prodLink)
   }
@@ -442,17 +438,21 @@ const App: React.FC = () => {
       )
     }
   ]
+
+  // 进度修改
   const proChange = (e: number, index: number) => {
     const saveData = JSON.parse(JSON.stringify(dataSource))
     saveData[index].progress = e
     setdataSource(saveData)
   }
 
+  // 描述修改
   const dirChange = (e: string, index: number) => {
     const saveData = JSON.parse(JSON.stringify(dataSource))
     saveData[index].description = e
     setdataSource(saveData)
   }
+
   // 保存
   const save = (value: branchlist, index: number) => {
     const saveData = JSON.parse(JSON.stringify(dataSource))
@@ -633,5 +633,4 @@ const App: React.FC = () => {
     </ConfigProvider>
   )
 }
-
 export default App
