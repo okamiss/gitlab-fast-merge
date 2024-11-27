@@ -8,5 +8,5 @@ export const progressList = [
   { value: 1, label: '开发中' },
   { value: 2, label: '测试中' },
   { value: 3, label: '已上线' },
-  { value: 4, label: '已作废' }
+  { value: 4, label: '其他' }
 ]
