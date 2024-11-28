@@ -500,7 +500,7 @@ const App: React.FC = () => {
       }}
     >
       {contextHolder}
-      <Row gutter={16} style={{ padding: '20px' }}>
+      <Row gutter={16} style={{ padding: '20px', margin: 0 }}>
         <Col className="gutter-row" span={12}>
           <Title>Gitlab快速命名branch/tag</Title>
           <TimeComponent
