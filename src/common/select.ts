@@ -1,7 +1,8 @@
 export const storeList = [
   { id: '4', value: 'admin-crm', label: 'crm系统' },
   { id: '10', value: 'admin-scrm', label: 'scrm系统' },
-  { id: '16', value: 'web-wwside', label: '企微侧边栏' }
+  { id: '16', value: 'web-wwside', label: '企微侧边栏' },
+  { id: '27', value: 'admin-promotion', label: '推广系统' }
 ]
 
 export const progressList = [
