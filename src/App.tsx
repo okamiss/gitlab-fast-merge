@@ -119,7 +119,8 @@ const TimeComponent: React.FC<{
       modiy: false,
       branch: preview,
       storeName: sname,
-      description
+      description,
+      create_time: Math.floor(Date.now() / 1000)
     }
 
     const getTable = localStorage.getItem('table')
@@ -385,12 +386,12 @@ const App: React.FC = () => {
     {
       title: '描述信息',
       // dataIndex: 'description'
-      render: (_: any, record: any, index) =>
+      render: (_: any, record: any) =>
         record.modiy ? (
           <Input
             value={record.description}
-            onChange={(e) => dirChange(e.target.value, index)}
-            onKeyUp={(e) => e.key === 'Enter' && save(record, index)}
+            onChange={(e) => dirChange(e.target.value, record.id)}
+            onKeyUp={(e) => e.key === 'Enter' && save(record)}
           />
         ) : (
           <span>{record.description}</span>
@@ -399,10 +400,10 @@ const App: React.FC = () => {
     {
       title: '进度',
       width: 120,
-      render: (_: any, record: any, index) => {
+      render: (_: any, record: any) => {
         return record.modiy ? (
           <Select
-            onChange={(e) => proChange(e, index)}
+            onChange={(e) => proChange(e, record.id)}
             style={{ width: '100%' }}
             value={record.progress}
             options={progressList}
@@ -416,17 +417,17 @@ const App: React.FC = () => {
       title: '操作',
       fixed: 'right',
       width: 250,
-      render: (_: any, record: any, index: number) => (
+      render: (_: any, record: any) => (
         <Space>
           <Button type="link" onClick={() => importBranch(record)}>
             导入分支
           </Button>
           {record.modiy ? (
-            <Button type="link" onClick={() => save(record, index)}>
+            <Button type="link" onClick={() => save(record)}>
               保存
             </Button>
           ) : (
-            <Button type="link" onClick={() => modiy(record, index)}>
+            <Button type="link" onClick={() => modiy(record)}>
               修改
             </Button>
           )}
@@ -440,31 +441,36 @@ const App: React.FC = () => {
   ]
 
   // 进度修改
-  const proChange = (e: number, index: number) => {
+  const proChange = (e: number, id: string) => {
     const saveData = JSON.parse(JSON.stringify(dataSource))
-    saveData[index].progress = e
+    const getId = saveData.findIndex((item: branchlist) => item.id === id)
+    saveData[getId].progress = e
     setdataSource(saveData)
   }
 
   // 描述修改
-  const dirChange = (e: string, index: number) => {
+  const dirChange = (e: string, id: string) => {
     const saveData = JSON.parse(JSON.stringify(dataSource))
-    saveData[index].description = e
+    const getId = saveData.findIndex((item: branchlist) => item.id === id)
+    saveData[getId].description = e
     setdataSource(saveData)
   }
 
   // 保存
-  const save = (value: branchlist, index: number) => {
+  const save = (row: branchlist) => {
     const saveData = JSON.parse(JSON.stringify(dataSource))
-    saveData[index].modiy = !value.modiy
+    const getId = saveData.findIndex((item: branchlist) => item.id === row.id)
+    saveData[getId].modiy = !row.modiy
     setdataSource(saveData)
     localStorage.setItem('table', JSON.stringify(saveData))
   }
 
   // 修改
-  const modiy = (value: branchlist, index: number) => {
+  const modiy = (row: branchlist) => {
     const modiyData = JSON.parse(JSON.stringify(dataSource))
-    modiyData[index].modiy = !value.modiy
+    const getId = modiyData.findIndex((item: branchlist) => item.id === row.id)
+
+    modiyData[getId].modiy = !row.modiy
     setdataSource(modiyData)
   }
 
