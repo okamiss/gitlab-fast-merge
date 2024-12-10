@@ -25,6 +25,8 @@ import copy from 'clipboard-copy'
 import { v4 as uuidv4 } from 'uuid'
 import { progressList, storeList } from './common/select'
 
+import Statistics from './components/statistics'
+
 const { TextArea } = Input
 
 type CheckboxValueType = GetProp<typeof Checkbox.Group, 'value'>[number]
@@ -634,6 +636,8 @@ const App: React.FC = () => {
               </Form.Item>
             </Form>
           </Card>
+          <Title>统计</Title>
+          <Statistics data={dataSource} />
         </Col>
       </Row>
     </ConfigProvider>
