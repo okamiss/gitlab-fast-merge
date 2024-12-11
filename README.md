@@ -1,30 +1,17 @@
-# React + TypeScript + Vite
+# Gitlab创建分支，合并分支，发布代码
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 技术栈：React + TypeScript + Vite
 
-Currently, two official plugins are available:
+### 功能
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+1. #### 根据当前日期创建分支（可勾选时分秒）
 
-## Expanding the ESLint configuration
+2. #### 合并代码，输入分支名和代码仓库即可快速创建生产和测试环境的合并链接
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+3. #### 可以暂存分支，支持编辑修改和导入
 
-- Configure the top-level `parserOptions` property like this:
+4. #### 暗黑主题功能，点击开启按钮即可
 
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
-```
+5. #### 默认分支前缀，只需要输入一次即可，以后每次创建的分支默认前缀即是这个**（建议先设置）**
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+6. #### 统计，根据创建分支的时间，统计对应年份的每月需求数量
