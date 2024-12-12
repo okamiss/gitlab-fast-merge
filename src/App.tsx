@@ -225,7 +225,7 @@ const TimeComponent: React.FC<{
         <Preview>
           <Row gutter={5}>
             <Col span={16}>预览：{preview}</Col>
-            <Col span={8}>{title === 'branch' && <span>保存仓库（{sname}）</span>}</Col>
+            <Col span={8}>{title === 'branch' && <span>{sname}</span>}</Col>
           </Row>
         </Preview>
         {title === 'branch' && (

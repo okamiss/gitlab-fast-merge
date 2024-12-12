@@ -8,4 +8,5 @@ export const Title = styled.div`
 export const Preview = styled.div`
   line-height: 40px;
   font-size: 16px;
+  margin-top: -24px;
 `
