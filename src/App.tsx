@@ -222,8 +222,13 @@ const TimeComponent: React.FC<{
             </Col>
           </Row>
         </Form>
-        <Preview>预览：{preview}</Preview>
-        {title === 'branch' ? (
+        <Preview>
+          <Row gutter={5}>
+            <Col span={16}>预览：{preview}</Col>
+            <Col span={8}>{title === 'branch' && <span>保存仓库（{sname}）</span>}</Col>
+          </Row>
+        </Preview>
+        {title === 'branch' && (
           <Row gutter={5}>
             <Col span={16}>
               <Input
@@ -248,7 +253,7 @@ const TimeComponent: React.FC<{
               </Button>
             </Col>
           </Row>
-        ) : null}
+        )}
       </Card>
     </>
   )
