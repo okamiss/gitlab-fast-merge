@@ -111,7 +111,7 @@ const TimeComponent: React.FC<{
     messageApi.success('复制成功')
   }
 
-  // 暂存分支
+  // 保存分支
   const saveBranch = () => {
     const getSLablename = storeList.find((item) => item.value === sname)?.label
 
@@ -140,12 +140,12 @@ const TimeComponent: React.FC<{
 
       updateBranch(newTable)
       localStorage.setItem('table', JSON.stringify(newTable))
-      messageApi.success('暂存成功')
+      messageApi.success('保存成功')
       setDescription('')
     } else {
       updateBranch([params])
       localStorage.setItem('table', JSON.stringify([params]))
-      messageApi.success('暂存成功')
+      messageApi.success('保存成功')
       setDescription('')
     }
   }
@@ -230,7 +230,7 @@ const TimeComponent: React.FC<{
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 onKeyUp={(e) => e.key === 'Enter' && saveBranch()}
-                placeholder="暂存分支描述信息，该分支对应需求说明"
+                placeholder="保存分支描述信息，该分支对应需求说明"
                 allowClear
               />
             </Col>
@@ -244,7 +244,7 @@ const TimeComponent: React.FC<{
             </Col>
             <Col span={3}>
               <Button type="primary" onClick={saveBranch}>
-                暂存
+                保存
               </Button>
             </Col>
           </Row>
@@ -519,7 +519,7 @@ const App: React.FC = () => {
             updateBranch={getUpdate}
           />
           <TimeComponent title={'tag'} childStyle={{ margin: '20px auto 0' }} />
-          <Title>暂存分支列表→导入到右侧发布</Title>
+          <Title>分支列表-导入到右侧合并&发布</Title>
           <Table bordered rowKey="id" dataSource={dataSource} columns={columns} />
         </Col>
         <Col className="gutter-row" span={12}>

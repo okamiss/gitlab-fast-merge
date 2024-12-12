@@ -20,7 +20,7 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>)
   if (active && payload && payload.length) {
     return (
       <div className="custom-tooltip">
-        <p className="label">{`${label} : ${payload[0].value}个需求`}</p>
+        <p className="label">{`${label} : 共${payload[0].value}个分支`}</p>
       </div>
     )
   }
