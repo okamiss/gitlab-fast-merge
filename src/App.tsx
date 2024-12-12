@@ -230,7 +230,7 @@ const TimeComponent: React.FC<{
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 onKeyUp={(e) => e.key === 'Enter' && saveBranch()}
-                placeholder="保存分支描述信息，该分支对应需求说明"
+                placeholder="分支描述"
                 allowClear
               />
             </Col>
