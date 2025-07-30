@@ -271,6 +271,8 @@ const App: React.FC = () => {
   const [defaultprefix, setDefaultprefix] = useState(
     localStorage.getItem('defaultprefix') as string
   )
+  const [domainUrl, setDomainUrl] = useState(localStorage.getItem('domainUrl') as string)
+  const [groupName, setGroupName] = useState(localStorage.getItem('groupName') as string)
   // const [isinput, setIsinput] = useState(false)
   // const isInputRef = useRef(false)
 
@@ -304,7 +306,7 @@ const App: React.FC = () => {
     if (!s) return
 
     const getSid = storeList.find((item) => item.value === s)?.id
-    const frontendUrl = 'https://gitlab.techzgzb.cn/frontend'
+    const frontendUrl = `${domainUrl}/${groupName}`
     const createBranch = `${frontendUrl}/${s}/-/branches/new`
     setcbname(createBranch)
     const createTag = `${frontendUrl}/${s}/-/tags/new`
@@ -505,6 +507,14 @@ const App: React.FC = () => {
     setDefaultprefix(e)
     localStorage.setItem('defaultprefix', e)
   }
+  const saveDomainUrl = (e: string) => {
+    setDomainUrl(e)
+    localStorage.setItem('domainUrl', e)
+  }
+  const saveGroupName = (e: string) => {
+    setGroupName(e)
+    localStorage.setItem('groupName', e)
+  }
 
   return (
     <ConfigProvider
@@ -632,11 +642,29 @@ const App: React.FC = () => {
               </Form.Item>
               <Form.Item label="默认分支前缀">
                 <Input
-                  style={{ width: '250px' }}
+                  style={{ width: '300px' }}
                   value={defaultprefix}
                   onChange={(e) => saveDefaultprefix(e.target.value)}
                   allowClear
                   placeholder="用于分支默认前缀"
+                />
+              </Form.Item>
+              <Form.Item label="仓库域名地址">
+                <Input
+                  style={{ width: '300px' }}
+                  value={domainUrl}
+                  onChange={(e) => saveDomainUrl(e.target.value)}
+                  allowClear
+                  placeholder="如：https://git.xxx.com"
+                />
+              </Form.Item>
+              <Form.Item label="所在项目组">
+                <Input
+                  style={{ width: '300px' }}
+                  value={groupName}
+                  onChange={(e) => saveGroupName(e.target.value)}
+                  allowClear
+                  placeholder="在dashboard/groups下面的项目组名称"
                 />
               </Form.Item>
             </Form>
