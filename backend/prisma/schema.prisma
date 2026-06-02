@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String         @id @default(uuid())
+  username     String         @unique
+  passwordHash String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  branches     BranchRecord[]
+  settings     UserSettings?
+}
+
+model BranchRecord {
+  id          String   @id @default(uuid())
+  branch      String
+  storeName   String
+  description String   @default("")
+  progress    Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, branch, storeName])
+  @@index([userId, createdAt])
+}
+
+model UserSettings {
+  id            String   @id @default(uuid())
+  defaultPrefix String   @default("")
+  domainUrl     String   @default("")
+  groupName     String   @default("")
+  darkTheme     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

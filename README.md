@@ -1,17 +1,79 @@
-# Gitlab创建分支，合并分支，发布代码
+# GitLab Fast Merge
 
-## 技术栈：React + TypeScript + Vite
+GitLab Fast Merge 是一个前后端分离的分支与发布工作台。它可以生成 Branch、Tag 和 Merge Request 链接，保存个人分支记录，并按月份展示趋势。
 
-### 功能
+## 技术栈
 
-1. #### 根据当前日期创建分支（可勾选时分秒）
+- 前端：React、TypeScript、Vite、Ant Design、Recharts
+- 后端：NestJS、Prisma、JWT、bcrypt
+- 数据库：PostgreSQL
+- 部署：Docker Compose、Nginx
 
-2. #### 合并代码，输入分支名和代码仓库即可快速创建生产和测试环境的合并链接
+## 本地运行
 
-3. #### 可以保存分支，支持编辑修改和导入
+推荐在本机运行前后端开发服务，只使用 Docker 启动 PostgreSQL。
 
-4. #### 暗黑主题功能，点击开启按钮即可
+先在项目根目录创建 Docker Compose 环境变量，并启动数据库：
 
-5. #### 默认分支前缀，只需要输入一次即可，以后每次创建的分支默认前缀即是这个**（建议先设置）**
+```bash
+cp .env.example .env
+docker compose up -d postgres
+```
 
-6. #### 统计，根据创建分支的时间，统计对应年份的每月需求数量
+Windows PowerShell 使用：
+
+```powershell
+Copy-Item .env.example .env
+docker compose up -d postgres
+```
+
+编辑根目录 `.env`，至少替换 `POSTGRES_PASSWORD` 和 `JWT_SECRET`。然后复制后端环境变量：
+
+```bash
+cd backend
+cp .env.example .env
+```
+
+Windows PowerShell 使用：
+
+```powershell
+cd backend
+Copy-Item .env.example .env
+```
+
+编辑 `backend/.env`：
+
+```dotenv
+PORT=3000
+DATABASE_URL=postgresql://gitlab_fast_merge:你在根目录设置的数据库密码@localhost:5432/gitlab_fast_merge?schema=public
+JWT_SECRET=你在根目录设置的JWT密钥
+JWT_EXPIRES_IN=7d
+FRONTEND_ORIGIN=http://localhost:5173
+```
+
+初始化数据库并启动后端：
+
+```bash
+npm install
+npx prisma generate
+npx prisma migrate dev
+npm run dev
+```
+
+新开一个终端运行前端：
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+访问 `http://localhost:5173`。前端开发服务器会将 `/api` 代理到 `http://localhost:3000`。
+
+## 旧版数据迁移
+
+用户首次登录后，浏览器中的旧版 `localStorage` 分支记录和设置会自动导入当前账号，并从旧存储位置移除。不同用户的数据由后端按 JWT 身份隔离。
+
+## 部署
+
+Ubuntu 24.04 部署步骤见 [DEPLOYMENT.md](./DEPLOYMENT.md)。
