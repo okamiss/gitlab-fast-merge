@@ -39,7 +39,7 @@ button, a, .ant-select, .ant-switch, .ant-segmented-item { cursor: pointer; }
 .surface-card { height: 100%; }
 .field-label { display: block; margin-bottom: 7px; color: #475569; font-size: 13px; font-weight: 700; }
 .ant-select { width: 100%; }
-.preview-box, .link-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.preview-box { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .preview-box { margin-top: 18px; padding: 14px; border: 1px solid #bbf7d0; border-radius: 10px; background: #f0fdf4; }
 .preview-box span { display: block; color: #166534; font-size: 12px; font-weight: 700; }
 .preview-box strong { overflow-wrap: anywhere; }
@@ -47,6 +47,7 @@ button, a, .ant-select, .ant-switch, .ant-segmented-item { cursor: pointer; }
 .generator-controls { display: grid; grid-template-columns: 1fr 180px; gap: 12px; margin-bottom: 16px; }
 .inline-alert { margin-bottom: 16px; }
 .link-list { display: grid; gap: 14px; }
+.link-item { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: end; gap: 12px; }
 .link-item > div:first-child { min-width: 0; flex: 1; }
 .link-item .ant-input { margin-top: 7px; }
 .section-block { margin: 20px 0; padding: 20px; border-radius: 12px; background: #fff; }
