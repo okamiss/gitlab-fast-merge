@@ -1,0 +1,57 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-gitlab_fast_merge}
+      POSTGRES_USER: ${POSTGRES_USER:-gitlab_fast_merge}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-gitlab_fast_merge} -d ${POSTGRES_DB:-gitlab_fast_merge}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    image: node:22-alpine
+    working_dir: /app
+    restart: unless-stopped
+    ports:
+      - "${BACKEND_PORT:-3000}:3000"
+    environment:
+      PORT: 3000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-gitlab_fast_merge}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-gitlab_fast_merge}?schema=public
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      FRONTEND_ORIGIN: ${DEV_FRONTEND_ORIGIN:-http://localhost:5173}
+    volumes:
+      - ./backend:/app
+      - backend_node_modules_dev:/app/node_modules
+    command: sh -c "npm ci && npx prisma generate && npx prisma migrate deploy && npm run dev"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    image: node:22-alpine
+    working_dir: /app
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    environment:
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3000/api}
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules_dev:/app/node_modules
+    command: sh -c "npm ci && npm run dev -- --host 0.0.0.0"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data_dev:
+  backend_node_modules_dev:
+  frontend_node_modules_dev:

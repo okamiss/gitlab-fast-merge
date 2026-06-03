@@ -10,6 +10,10 @@ export default defineConfig({
     }
   },
   server: {
+    watch: {
+      usePolling: true,
+      interval: 300
+    },
     proxy: {
       '/api': 'http://localhost:3000'
     }

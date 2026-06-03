@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { DeleteOutlined, EditOutlined, ImportOutlined } from '@ant-design/icons'
-import { Button, Input, Modal, Popconfirm, Select, Space, Table, Tag, Typography } from 'antd'
+import { Button, Input, Modal, Popconfirm, Select, Space, Table, Tag, Tooltip, Typography } from 'antd'
 import type { TableColumnsType } from 'antd'
 import { progressOptions, storeOptions } from '@/constants/options'
 import type { BranchRecord } from '@/types'
@@ -18,18 +18,18 @@ export function BranchTable({ records, loading, onImport, onDelete, onUpdate }: 
   const [saving, setSaving] = useState(false)
 
   const columns: TableColumnsType<BranchRecord> = [
-    { title: 'Branch', dataIndex: 'branch', ellipsis: true },
+    { title: 'Branch', dataIndex: 'branch', width: 120, ellipsis: true },
     {
       title: '仓库',
       dataIndex: 'storeName',
-      width: 140,
+      width: 92,
       render: (storeName: string) => storeOptions.find((item) => item.value === storeName)?.label
     },
-    { title: '描述', dataIndex: 'description', ellipsis: true },
+    { title: '描述', dataIndex: 'description', width: 120, ellipsis: true, responsive: ['sm'] },
     {
       title: '进度',
       dataIndex: 'progress',
-      width: 100,
+      width: 74,
       render: (progress: number) => {
         const option = progressOptions.find((item) => item.value === progress)
         return <Tag color={option?.color}>{option?.label}</Tag>
@@ -38,13 +38,19 @@ export function BranchTable({ records, loading, onImport, onDelete, onUpdate }: 
     {
       title: '操作',
       key: 'action',
-      width: 230,
+      width: 98,
       render: (_, record) => (
-        <Space size={4}>
-          <Button type="link" icon={<ImportOutlined />} onClick={() => onImport(record)}>导入</Button>
-          <Button type="link" icon={<EditOutlined />} onClick={() => setEditing(record)}>编辑</Button>
+        <Space size={0}>
+          <Tooltip title="导入">
+            <Button type="link" aria-label="导入" icon={<ImportOutlined />} onClick={() => onImport(record)} />
+          </Tooltip>
+          <Tooltip title="编辑">
+            <Button type="link" aria-label="编辑" icon={<EditOutlined />} onClick={() => setEditing(record)} />
+          </Tooltip>
           <Popconfirm title="确认删除这条分支记录？" onConfirm={() => onDelete(record.id)}>
-            <Button type="link" danger icon={<DeleteOutlined />}>删除</Button>
+            <Tooltip title="删除">
+              <Button type="link" danger aria-label="删除" icon={<DeleteOutlined />} />
+            </Tooltip>
           </Popconfirm>
         </Space>
       )
@@ -79,7 +85,8 @@ export function BranchTable({ records, loading, onImport, onDelete, onUpdate }: 
         columns={columns}
         dataSource={records}
         loading={loading}
-        scroll={{ x: 820 }}
+        size="small"
+        tableLayout="fixed"
         pagination={{ pageSize: 8, hideOnSinglePage: true }}
       />
       <Modal
