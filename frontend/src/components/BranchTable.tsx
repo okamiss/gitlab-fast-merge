@@ -18,18 +18,18 @@ export function BranchTable({ records, loading, onImport, onDelete, onUpdate }: 
   const [saving, setSaving] = useState(false)
 
   const columns: TableColumnsType<BranchRecord> = [
-    { title: 'Branch', dataIndex: 'branch', width: 120, ellipsis: true },
+    { title: 'Branch', dataIndex: 'branch', width: 150, ellipsis: true },
     {
       title: '仓库',
       dataIndex: 'storeName',
-      width: 92,
+      width: 150,
       render: (storeName: string) => storeOptions.find((item) => item.value === storeName)?.label
     },
-    { title: '描述', dataIndex: 'description', width: 120, ellipsis: true, responsive: ['sm'] },
+    { title: '描述', dataIndex: 'description', ellipsis: true, responsive: ['sm'] },
     {
       title: '进度',
       dataIndex: 'progress',
-      width: 74,
+      width: 100,
       render: (progress: number) => {
         const option = progressOptions.find((item) => item.value === progress)
         return <Tag color={option?.color}>{option?.label}</Tag>
@@ -38,7 +38,7 @@ export function BranchTable({ records, loading, onImport, onDelete, onUpdate }: 
     {
       title: '操作',
       key: 'action',
-      width: 98,
+      width: 120,
       render: (_, record) => (
         <Space size={0}>
           <Tooltip title="导入">
