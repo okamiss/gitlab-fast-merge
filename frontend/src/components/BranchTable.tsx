@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { DeleteOutlined, EditOutlined, ImportOutlined } from '@ant-design/icons'
+import { DeleteOutlined, EditOutlined, ExperimentOutlined, ImportOutlined, RocketOutlined } from '@ant-design/icons'
 import { Button, Input, Modal, Popconfirm, Select, Space, Table, Tag, Tooltip, Typography } from 'antd'
 import type { TableColumnsType } from 'antd'
 import { progressOptions, storeOptions } from '@/constants/options'
@@ -12,6 +12,7 @@ interface BranchTableProps {
   pageSize: number
   total: number
   onImport: (record: BranchRecord) => void
+  onImportAndOpen: (record: BranchRecord, target: 'beta' | 'prod') => void
   onDelete: (id: string) => Promise<void>
   onPageChange: (page: number, pageSize: number) => void
   onUpdate: (id: string, payload: { description: string; progress: number }) => Promise<void>
@@ -24,6 +25,7 @@ export function BranchTable({
   pageSize,
   total,
   onImport,
+  onImportAndOpen,
   onDelete,
   onPageChange,
   onUpdate
@@ -52,11 +54,31 @@ export function BranchTable({
     {
       title: '操作',
       key: 'action',
-      width: 120,
+      width: 300,
       render: (_, record) => (
         <Space size={0}>
           <Tooltip title="导入">
             <Button type="link" aria-label="导入" icon={<ImportOutlined />} onClick={() => onImport(record)} />
+          </Tooltip>
+          <Tooltip title="导入并打开测试合并">
+            <Button
+              type="link"
+              aria-label="导入并打开测试合并"
+              icon={<ExperimentOutlined />}
+              onClick={() => onImportAndOpen(record, 'beta')}
+            >
+              测合
+            </Button>
+          </Tooltip>
+          <Tooltip title="导入并打开生产合并">
+            <Button
+              type="link"
+              aria-label="导入并打开生产合并"
+              icon={<RocketOutlined />}
+              onClick={() => onImportAndOpen(record, 'prod')}
+            >
+              产合
+            </Button>
           </Tooltip>
           <Tooltip title="编辑">
             <Button type="link" aria-label="编辑" icon={<EditOutlined />} onClick={() => setEditing(record)} />

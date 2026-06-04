@@ -1,16 +1,19 @@
 import { useEffect, useMemo, useState } from 'react'
-import { CopyOutlined, SaveOutlined } from '@ant-design/icons'
-import { Button, Card, Checkbox, Col, Input, Row, Select, Typography } from 'antd'
+import { BranchesOutlined, CopyOutlined, SaveOutlined } from '@ant-design/icons'
+import { Button, Card, Checkbox, Col, Input, Row, Select, Typography, message } from 'antd'
 import dayjs from 'dayjs'
 import { storeOptions } from '@/constants/options'
+import { copyText } from '@/utils/clipboard'
 
 type TimePart = 'date' | 'minute' | 'second'
+type SaveBranchPayload = { branch: string; storeName: string; description: string }
+type SaveBranchOptions = { openCreateLink?: boolean }
 
 interface NameBuilderProps {
   type: 'branch' | 'tag'
   defaultPrefix?: string
   onPreviewChange?: (value: string) => void
-  onSaveBranch?: (payload: { branch: string; storeName: string; description: string }) => void
+  onSaveBranch?: (payload: SaveBranchPayload, options?: SaveBranchOptions) => void | Promise<void>
 }
 
 const labels: Record<TimePart, string> = {
@@ -33,6 +36,7 @@ export function NameBuilder({
   onPreviewChange,
   onSaveBranch
 }: NameBuilderProps) {
+  const [messageApi, contextHolder] = message.useMessage()
   const isBranch = type === 'branch'
   const [prefix, setPrefix] = useState(isBranch ? defaultPrefix : 'prod')
   const [suffix, setSuffix] = useState('')
@@ -61,14 +65,19 @@ export function NameBuilder({
     onPreviewChange?.(preview)
   }, [onPreviewChange, preview])
 
-  const copyPreview = () => navigator.clipboard.writeText(preview)
-  const saveBranch = () => {
+  const copyPreview = async () => {
+    const copied = await copyText(preview)
+    messageApi[copied ? 'success' : 'error'](copied ? '已复制' : '复制失败，请手动复制')
+  }
+  const saveBranch = (options?: SaveBranchOptions) => {
     if (!preview) return
-    onSaveBranch?.({ branch: preview, storeName, description: description.trim() })
+    onSaveBranch?.({ branch: preview, storeName, description: description.trim() }, options)
     setDescription('')
   }
 
   return (
+    <>
+    {contextHolder}
     <Card
       className="surface-card"
       title={isBranch ? 'Branch 命名' : 'Tag 命名'}
@@ -116,21 +125,25 @@ export function NameBuilder({
             <Input
               value={description}
               onChange={(event) => setDescription(event.target.value)}
-              onPressEnter={saveBranch}
+              onPressEnter={() => saveBranch()}
               placeholder="补充需求或分支描述"
               allowClear
             />
           </Col>
-          <Col xs={16} lg={8}>
+          <Col xs={24} sm={12} lg={6}>
             <Select value={storeName} onChange={setStoreName} options={storeOptions} />
           </Col>
-          <Col xs={8} lg={4}>
-            <Button type="primary" icon={<SaveOutlined />} onClick={saveBranch} block>
+          <Col xs={12} sm={6} lg={4}>
+            <Button type="primary" icon={<SaveOutlined />} onClick={() => saveBranch()} block>
               保存
             </Button>
+          </Col>
+          <Col xs={12} sm={6} lg={4}>
+            <Button icon={<BranchesOutlined />} onClick={() => saveBranch({ openCreateLink: true })} block>保存并创建</Button>
           </Col>
         </Row>
       )}
     </Card>
+    </>
   )
 }

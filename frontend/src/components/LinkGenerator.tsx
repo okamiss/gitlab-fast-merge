@@ -1,7 +1,8 @@
-import { useMemo } from 'react'
 import { CopyOutlined, ExportOutlined, LinkOutlined } from '@ant-design/icons'
-import { Alert, Button, Card, Input, Select, Space, Typography } from 'antd'
+import { Alert, Button, Card, Input, Select, Space, Typography, message } from 'antd'
 import { storeOptions } from '@/constants/options'
+import { copyText } from '@/utils/clipboard'
+import { buildGitLabLinks } from '@/utils/gitlab-links'
 import type { GeneratedLink, UserSettings } from '@/types'
 
 interface LinkGeneratorProps {
@@ -12,10 +13,6 @@ interface LinkGeneratorProps {
   onStoreChange: (value: string) => void
 }
 
-function trimSlashes(value: string) {
-  return value.replace(/^\/+|\/+$/g, '')
-}
-
 export function LinkGenerator({
   branch,
   storeName,
@@ -23,28 +20,12 @@ export function LinkGenerator({
   onBranchChange,
   onStoreChange
 }: LinkGeneratorProps) {
-  const links = useMemo<GeneratedLink[]>(() => {
-    const store = storeOptions.find((item) => item.value === storeName)
-    const domain = settings.domainUrl.replace(/\/+$/, '')
-    const group = trimSlashes(settings.groupName)
-    if (!domain || !group || !store) return []
-    const projectUrl = `${domain}/${group}/${store.value}`
-    const betaParams = new URLSearchParams({
-      'merge_request[source_project_id]': store.id,
-      'merge_request[source_branch]': branch,
-      'merge_request[target_project_id]': store.id,
-      'merge_request[target_branch]': 'beta'
-    })
-    const prodParams = new URLSearchParams({ 'merge_request[source_branch]': branch })
-    return [
-      { kind: 'branch', label: '创建 Branch', value: `${projectUrl}/-/branches/new` },
-      { kind: 'tag', label: '创建 Tag', value: `${projectUrl}/-/tags/new` },
-      { kind: 'beta', label: '合并至测试环境', value: branch ? `${projectUrl}/-/merge_requests/new?${betaParams}` : '' },
-      { kind: 'prod', label: '合并至生产环境', value: branch ? `${projectUrl}/-/merge_requests/new?${prodParams}` : '' }
-    ]
-  }, [branch, settings.domainUrl, settings.groupName, storeName])
+  const [messageApi, contextHolder] = message.useMessage()
+  const links: GeneratedLink[] = buildGitLabLinks(branch, storeName, settings)
 
   return (
+    <>
+    {contextHolder}
     <Card
       className="surface-card"
       title={<Space><LinkOutlined />GitLab 快捷链接</Space>}
@@ -79,7 +60,10 @@ export function LinkGenerator({
               <Button
                 icon={<CopyOutlined />}
                 disabled={!link.value}
-                onClick={() => navigator.clipboard.writeText(link.value)}
+                onClick={async () => {
+                  const copied = await copyText(link.value)
+                  messageApi[copied ? 'success' : 'error'](copied ? '已复制' : '复制失败，请手动复制')
+                }}
               >
                 复制
               </Button>
@@ -96,5 +80,6 @@ export function LinkGenerator({
         ))}
       </div>
     </Card>
+    </>
   )
 }

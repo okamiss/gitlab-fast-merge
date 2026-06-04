@@ -10,7 +10,8 @@ import { StatisticsPanel } from '@/components/StatisticsPanel'
 import { storeOptions } from '@/constants/options'
 import { useAuth } from '@/hooks/useAuth'
 import { branchApi, settingsApi } from '@/services/api'
-import type { BranchRecord, LegacyBranchRecord, UserSettings } from '@/types'
+import type { BranchRecord, GeneratedLink, LegacyBranchRecord, UserSettings } from '@/types'
+import { buildGitLabLinks } from '@/utils/gitlab-links'
 
 const emptySettings: UserSettings = {
   defaultPrefix: '',
@@ -95,11 +96,28 @@ export function Dashboard() {
       .finally(loadDashboard)
   }, [loadDashboard, messageApi, migrateLegacyData])
 
-  const saveBranch = async (payload: { branch: string; storeName: string; description: string }) => {
+  const openGeneratedLink = (nextBranch: string, nextStoreName: string, kind: GeneratedLink['kind']) => {
+    const link = buildGitLabLinks(nextBranch, nextStoreName, settings).find((item) => item.kind === kind)
+    if (!link?.value) {
+      messageApi.warning('请先完善 GitLab 域名、项目组和 Branch')
+      return
+    }
+    window.open(link.value, '_blank', 'noopener,noreferrer')
+  }
+
+  const saveBranch = async (
+    payload: { branch: string; storeName: string; description: string },
+    options?: { openCreateLink?: boolean }
+  ) => {
     try {
       await branchApi.create(payload)
       await loadBranches(1, recordsPageSize)
+      setBranch(payload.branch)
+      setStoreName(payload.storeName)
       messageApi.success('Branch 已保存')
+      if (options?.openCreateLink) {
+        openGeneratedLink(payload.branch, payload.storeName, 'branch')
+      }
     } catch (error) {
       messageApi.error(error instanceof Error ? error.message : '保存失败')
     }
@@ -198,6 +216,11 @@ export function Dashboard() {
                 onImport={(record) => {
                   setBranch(record.branch)
                   setStoreName(record.storeName)
+                }}
+                onImportAndOpen={(record, target) => {
+                  setBranch(record.branch)
+                  setStoreName(record.storeName)
+                  openGeneratedLink(record.branch, record.storeName, target)
                 }}
                 onDelete={deleteBranch}
                 onPageChange={(page, pageSize) => {
