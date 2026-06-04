@@ -3,16 +3,34 @@ import { Prisma } from '@prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
 import { CreateBranchDto } from './dto/create-branch.dto'
 import { UpdateBranchDto } from './dto/update-branch.dto'
+import { normalizeBranchPage } from './pagination'
 
 @Injectable()
 export class BranchesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  list(userId: string) {
-    return this.prisma.branchRecord.findMany({
-      where: { userId },
-      orderBy: { createdAt: 'desc' }
-    })
+  async list(userId: string, page?: number | string, pageSize?: number | string) {
+    const pagination = normalizeBranchPage(page, pageSize)
+    const where = { userId }
+    const [total, data] = await this.prisma.$transaction([
+      this.prisma.branchRecord.count({ where }),
+      this.prisma.branchRecord.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: pagination.skip,
+        take: pagination.pageSize
+      })
+    ])
+
+    return {
+      data,
+      meta: {
+        page: pagination.page,
+        pageSize: pagination.pageSize,
+        total,
+        totalPages: Math.ceil(total / pagination.pageSize)
+      }
+    }
   }
 
   async create(userId: string, dto: CreateBranchDto) {

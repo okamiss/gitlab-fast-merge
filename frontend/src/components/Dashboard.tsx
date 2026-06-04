@@ -36,13 +36,28 @@ export function Dashboard() {
   const [branch, setBranch] = useState('')
   const [storeName, setStoreName] = useState(storeOptions[0].value)
   const [loading, setLoading] = useState(true)
+  const [branchesLoading, setBranchesLoading] = useState(false)
+  const [recordsPage, setRecordsPage] = useState(1)
+  const [recordsTotal, setRecordsTotal] = useState(0)
+  const [recordsPageSize, setRecordsPageSize] = useState(10)
   const [savingSettings, setSavingSettings] = useState(false)
+
+  const loadBranches = useCallback(async (page = 1, pageSize = 10) => {
+    const nextRecords = await branchApi.list(page, pageSize)
+    setRecords(nextRecords.data)
+    setRecordsPage(nextRecords.meta.page)
+    setRecordsTotal(nextRecords.meta.total)
+    setRecordsPageSize(nextRecords.meta.pageSize)
+  }, [])
 
   const loadDashboard = useCallback(async () => {
     setLoading(true)
     try {
-      const [nextRecords, nextSettings] = await Promise.all([branchApi.list(), settingsApi.get()])
-      setRecords(nextRecords)
+      const [nextRecords, nextSettings] = await Promise.all([branchApi.list(1), settingsApi.get()])
+      setRecords(nextRecords.data)
+      setRecordsPage(nextRecords.meta.page)
+      setRecordsTotal(nextRecords.meta.total)
+      setRecordsPageSize(nextRecords.meta.pageSize)
       setSettings(nextSettings)
     } catch (error) {
       messageApi.error(error instanceof Error ? error.message : '加载工作台失败')
@@ -82,8 +97,8 @@ export function Dashboard() {
 
   const saveBranch = async (payload: { branch: string; storeName: string; description: string }) => {
     try {
-      const created = await branchApi.create(payload)
-      setRecords((current) => [created, ...current])
+      await branchApi.create(payload)
+      await loadBranches(1, recordsPageSize)
       messageApi.success('Branch 已保存')
     } catch (error) {
       messageApi.error(error instanceof Error ? error.message : '保存失败')
@@ -98,7 +113,7 @@ export function Dashboard() {
 
   const deleteBranch = async (id: string) => {
     await branchApi.remove(id)
-    setRecords((current) => current.filter((record) => record.id !== id))
+    await loadBranches(records.length === 1 && recordsPage > 1 ? recordsPage - 1 : recordsPage, recordsPageSize)
     messageApi.success('记录已删除')
   }
 
@@ -143,7 +158,7 @@ export function Dashboard() {
               </Typography.Paragraph>
             </div>
             <div className="hero-metrics">
-              <div><DatabaseOutlined /><strong>{records.length}</strong><span>已保存 Branch</span></div>
+              <div><DatabaseOutlined /><strong>{recordsTotal}</strong><span>已保存 Branch</span></div>
               <div><RocketOutlined /><strong>4</strong><span>快捷发布入口</span></div>
               <div><BulbOutlined /><strong>1</strong><span>集中式工作台</span></div>
             </div>
@@ -176,12 +191,23 @@ export function Dashboard() {
               </Row>
               <BranchTable
                 records={records}
-                loading={loading}
+                loading={branchesLoading}
+                page={recordsPage}
+                pageSize={recordsPageSize}
+                total={recordsTotal}
                 onImport={(record) => {
                   setBranch(record.branch)
                   setStoreName(record.storeName)
                 }}
                 onDelete={deleteBranch}
+                onPageChange={(page, pageSize) => {
+                  setBranchesLoading(true)
+                  loadBranches(page, pageSize)
+                    .catch((error) =>
+                      messageApi.error(error instanceof Error ? error.message : '加载 Branch 记录失败')
+                    )
+                    .finally(() => setBranchesLoading(false))
+                }}
                 onUpdate={updateBranch}
               />
               <Row gutter={[20, 20]}>

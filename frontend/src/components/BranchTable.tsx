@@ -8,12 +8,26 @@ import type { BranchRecord } from '@/types'
 interface BranchTableProps {
   records: BranchRecord[]
   loading: boolean
+  page: number
+  pageSize: number
+  total: number
   onImport: (record: BranchRecord) => void
   onDelete: (id: string) => Promise<void>
+  onPageChange: (page: number, pageSize: number) => void
   onUpdate: (id: string, payload: { description: string; progress: number }) => Promise<void>
 }
 
-export function BranchTable({ records, loading, onImport, onDelete, onUpdate }: BranchTableProps) {
+export function BranchTable({
+  records,
+  loading,
+  page,
+  pageSize,
+  total,
+  onImport,
+  onDelete,
+  onPageChange,
+  onUpdate
+}: BranchTableProps) {
   const [editing, setEditing] = useState<BranchRecord | null>(null)
   const [saving, setSaving] = useState(false)
 
@@ -78,7 +92,7 @@ export function BranchTable({ records, loading, onImport, onDelete, onUpdate }: 
           <Typography.Title level={4}>已保存的 Branch</Typography.Title>
           <Typography.Text type="secondary">登录用户独立保存，可随时导入右侧链接生成器。</Typography.Text>
         </div>
-        <span className="count-pill">{records.length} 条记录</span>
+        <span className="count-pill">{total} 条记录</span>
       </div>
       <Table
         rowKey="id"
@@ -87,7 +101,15 @@ export function BranchTable({ records, loading, onImport, onDelete, onUpdate }: 
         loading={loading}
         size="small"
         tableLayout="fixed"
-        pagination={{ pageSize: 8, hideOnSinglePage: true }}
+        pagination={{
+          current: page,
+          pageSize,
+          total,
+          hideOnSinglePage: false,
+          showSizeChanger: true,
+          pageSizeOptions: [10, 20, 50, 100],
+          onChange: onPageChange
+        }}
       />
       <Modal
         title="编辑分支记录"

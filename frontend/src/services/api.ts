@@ -3,6 +3,7 @@ import type {
   AuthUser,
   BranchRecord,
   LegacyBranchRecord,
+  PaginatedBranchRecords,
   UserSettings
 } from '@/types'
 
@@ -54,7 +55,8 @@ export const authApi = {
 }
 
 export const branchApi = {
-  list: () => request<BranchRecord[]>('/branches'),
+  list: (page = 1, pageSize = 10) =>
+    request<PaginatedBranchRecords>(`/branches?page=${page}&pageSize=${pageSize}`),
   create: (payload: Pick<BranchRecord, 'branch' | 'storeName' | 'description'>) =>
     request<BranchRecord>('/branches', { method: 'POST', body: JSON.stringify(payload) }),
   update: (id: string, payload: Partial<Pick<BranchRecord, 'description' | 'progress'>>) =>
@@ -64,7 +66,7 @@ export const branchApi = {
     }),
   remove: (id: string) => request<{ deleted: boolean }>(`/branches/${id}`, { method: 'DELETE' }),
   importLegacy: (records: LegacyBranchRecord[]) =>
-    request<BranchRecord[]>('/branches/import', {
+    request<PaginatedBranchRecords>('/branches/import', {
       method: 'POST',
       body: JSON.stringify({
         records: records.map((record) => ({

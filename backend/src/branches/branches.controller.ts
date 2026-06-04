@@ -1,10 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { CurrentUser } from '../common/decorators/current-user.decorator'
 import type { AuthUser } from '../common/types/auth-user'
 import { BranchesService } from './branches.service'
 import { CreateBranchDto } from './dto/create-branch.dto'
 import { ImportBranchesDto } from './dto/import-branches.dto'
+import { ListBranchesQueryDto } from './dto/list-branches-query.dto'
 import { UpdateBranchDto } from './dto/update-branch.dto'
 
 @UseGuards(JwtAuthGuard)
@@ -13,8 +14,8 @@ export class BranchesController {
   constructor(private readonly branches: BranchesService) {}
 
   @Get()
-  list(@CurrentUser() user: AuthUser) {
-    return this.branches.list(user.userId)
+  list(@CurrentUser() user: AuthUser, @Query() query: ListBranchesQueryDto) {
+    return this.branches.list(user.userId, query.page, query.pageSize)
   }
 
   @Post()

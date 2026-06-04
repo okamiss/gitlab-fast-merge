@@ -18,6 +18,16 @@ export interface BranchRecord {
   updatedAt: string
 }
 
+export interface PaginatedBranchRecords {
+  data: BranchRecord[]
+  meta: {
+    page: number
+    pageSize: number
+    total: number
+    totalPages: number
+  }
+}
+
 export interface UserSettings {
   defaultPrefix: string
   domainUrl: string
