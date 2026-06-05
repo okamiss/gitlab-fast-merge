@@ -1,12 +1,16 @@
-import { storeOptions } from '@/constants/options'
-import type { GeneratedLink, UserSettings } from '@/types'
+import type { GeneratedLink, RepositoryOption, UserSettings } from '@/types'
 
 function trimSlashes(value: string) {
   return value.replace(/^\/+|\/+$/g, '')
 }
 
-export function buildGitLabLinks(branch: string, storeName: string, settings: UserSettings): GeneratedLink[] {
-  const store = storeOptions.find((item) => item.value === storeName)
+export function buildGitLabLinks(
+  branch: string,
+  storeName: string,
+  settings: UserSettings,
+  repositories: RepositoryOption[]
+): GeneratedLink[] {
+  const store = repositories.find((item) => item.value === storeName)
   const domain = settings.domainUrl.replace(/\/+$/, '')
   const group = trimSlashes(settings.groupName)
   if (!domain || !group || !store) return []

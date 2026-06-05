@@ -1,4 +1,8 @@
-import type { RepositoryOption } from '@/types'
+export interface RepositoryOption {
+  id: string
+  value: string
+  label: string
+}
 
 export const defaultRepositories: RepositoryOption[] = [
   { id: '4', value: 'admin-crm', label: 'CRM 系统' },
@@ -13,9 +17,18 @@ export const defaultRepositories: RepositoryOption[] = [
   { id: '14', value: 'admin-sso', label: 'SSO 登录系统' }
 ]
 
-export const progressOptions = [
-  { value: 1, label: '开发中', color: '#2563eb' },
-  { value: 2, label: '测试中', color: '#7c3aed' },
-  { value: 3, label: '已上线', color: '#16a34a' },
-  { value: 4, label: '其他', color: '#64748b' }
-]
+export function normalizeRepositories(value: unknown): RepositoryOption[] {
+  if (!Array.isArray(value)) return defaultRepositories
+
+  return value
+    .map((item) => {
+      if (!item || typeof item !== 'object') return null
+      const repository = item as Partial<RepositoryOption>
+      return {
+        id: String(repository.id ?? '').trim(),
+        value: String(repository.value ?? '').trim(),
+        label: String(repository.label ?? '').trim()
+      }
+    })
+    .filter((item): item is RepositoryOption => Boolean(item?.id && item.value && item.label))
+}

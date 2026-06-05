@@ -1,17 +1,4 @@
-import { IsIn, IsInt, IsOptional, IsString, MaxLength, Min } from 'class-validator'
-
-const storeNames = [
-  'admin-crm',
-  'admin-scrm',
-  'web-wwside',
-  'admin-promotion',
-  'admin-videolive',
-  'admin-app',
-  'web-official',
-  'admin-cms',
-  'web-course',
-  'admin-sso'
-]
+import { IsInt, IsOptional, IsString, MaxLength, Min } from 'class-validator'
 
 export class CreateBranchDto {
   @IsString()
@@ -19,7 +6,7 @@ export class CreateBranchDto {
   branch!: string
 
   @IsString()
-  @IsIn(storeNames)
+  @MaxLength(120)
   storeName!: string
 
   @IsString()

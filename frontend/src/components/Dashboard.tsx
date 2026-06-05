@@ -7,7 +7,7 @@ import { LinkGenerator } from '@/components/LinkGenerator'
 import { NameBuilder } from '@/components/NameBuilder'
 import { SettingsPanel } from '@/components/SettingsPanel'
 import { StatisticsPanel } from '@/components/StatisticsPanel'
-import { storeOptions } from '@/constants/options'
+import { defaultRepositories } from '@/constants/options'
 import { useAuth } from '@/hooks/useAuth'
 import { branchApi, settingsApi } from '@/services/api'
 import type { BranchRecord, BranchTrend, GeneratedLink, LegacyBranchRecord, UserSettings } from '@/types'
@@ -17,7 +17,8 @@ const emptySettings: UserSettings = {
   defaultPrefix: '',
   domainUrl: '',
   groupName: '',
-  darkTheme: false
+  darkTheme: false,
+  repositories: defaultRepositories
 }
 
 function readLegacyRecords(): LegacyBranchRecord[] {
@@ -36,13 +37,14 @@ export function Dashboard() {
   const [branchTrend, setBranchTrend] = useState<BranchTrend | null>(null)
   const [settings, setSettings] = useState<UserSettings>(emptySettings)
   const [branch, setBranch] = useState('')
-  const [storeName, setStoreName] = useState(storeOptions[0].value)
+  const [storeName, setStoreName] = useState(defaultRepositories[0].value)
   const [loading, setLoading] = useState(true)
   const [branchesLoading, setBranchesLoading] = useState(false)
   const [recordsPage, setRecordsPage] = useState(1)
   const [recordsTotal, setRecordsTotal] = useState(0)
   const [recordsPageSize, setRecordsPageSize] = useState(10)
   const [savingSettings, setSavingSettings] = useState(false)
+  const repositories = settings.repositories
 
   const loadBranches = useCallback(async (page = 1, pageSize = 10) => {
     const nextRecords = await branchApi.list(page, pageSize)
@@ -108,7 +110,7 @@ export function Dashboard() {
   }, [loadDashboard, messageApi, migrateLegacyData])
 
   const openGeneratedLink = (nextBranch: string, nextStoreName: string, kind: GeneratedLink['kind']) => {
-    const link = buildGitLabLinks(nextBranch, nextStoreName, settings).find((item) => item.kind === kind)
+    const link = buildGitLabLinks(nextBranch, nextStoreName, settings, repositories).find((item) => item.kind === kind)
     if (!link?.value) {
       messageApi.warning('请先完善 GitLab 域名、项目组和 Branch')
       return
@@ -154,6 +156,9 @@ export function Dashboard() {
     try {
       const updated = await settingsApi.update(values)
       setSettings(updated)
+      if (!updated.repositories.some((repository) => repository.value === storeName)) {
+        setStoreName(updated.repositories[0]?.value ?? '')
+      }
       messageApi.success('设置已保存')
     } finally {
       setSavingSettings(false)
@@ -205,10 +210,11 @@ export function Dashboard() {
                     <NameBuilder
                       type="branch"
                       defaultPrefix={settings.defaultPrefix}
+                      repositories={repositories}
                       onPreviewChange={setBranch}
                       onSaveBranch={saveBranch}
                     />
-                    <NameBuilder type="tag" />
+                    <NameBuilder type="tag" repositories={repositories} />
                   </div>
                 </Col>
                 <Col xs={24} xl={10}>
@@ -216,6 +222,7 @@ export function Dashboard() {
                     branch={branch}
                     storeName={storeName}
                     settings={settings}
+                    repositories={repositories}
                     onBranchChange={setBranch}
                     onStoreChange={setStoreName}
                   />
@@ -227,6 +234,7 @@ export function Dashboard() {
                 page={recordsPage}
                 pageSize={recordsPageSize}
                 total={recordsTotal}
+                repositories={repositories}
                 onImport={(record) => {
                   setBranch(record.branch)
                   setStoreName(record.storeName)

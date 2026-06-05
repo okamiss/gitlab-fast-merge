@@ -1,6 +1,7 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
+import { normalizeRepositories } from '../settings/default-repositories'
 import { CreateBranchDto } from './dto/create-branch.dto'
 import { UpdateBranchDto } from './dto/update-branch.dto'
 import { normalizeBranchPage } from './pagination'
@@ -58,6 +59,7 @@ export class BranchesService {
   }
 
   async create(userId: string, dto: CreateBranchDto) {
+    await this.ensureRepositoryAvailable(userId, dto.storeName)
     try {
       return await this.prisma.branchRecord.create({
         data: {
@@ -95,6 +97,7 @@ export class BranchesService {
   }
 
   async importLegacy(userId: string, records: CreateBranchDto[]) {
+    await this.ensureRepositoriesAvailable(userId, records.map((record) => record.storeName))
     await this.prisma.branchRecord.createMany({
       data: records.map((record) => ({
         userId,
@@ -113,6 +116,25 @@ export class BranchesService {
     const branch = await this.prisma.branchRecord.findFirst({ where: { id, userId } })
     if (!branch) {
       throw new NotFoundException('Branch 记录不存在')
+    }
+  }
+
+  private async ensureRepositoryAvailable(userId: string, storeName: string) {
+    await this.ensureRepositoriesAvailable(userId, [storeName])
+  }
+
+  private async ensureRepositoriesAvailable(userId: string, storeNames: string[]) {
+    const settings = await this.prisma.userSettings.upsert({
+      where: { userId },
+      create: { userId },
+      update: {}
+    })
+    const repositories = normalizeRepositories(settings.repositories)
+    const allowedStoreNames = new Set(repositories.map((repository) => repository.value))
+    const invalidStoreName = storeNames.find((storeName) => !allowedStoreNames.has(storeName))
+
+    if (invalidStoreName) {
+      throw new BadRequestException('代码仓库不存在，请先在工作台设置中添加')
     }
   }
 }

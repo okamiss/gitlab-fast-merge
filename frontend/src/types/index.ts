@@ -37,11 +37,18 @@ export interface BranchTrend {
   }>
 }
 
+export interface RepositoryOption {
+  id: string
+  value: string
+  label: string
+}
+
 export interface UserSettings {
   defaultPrefix: string
   domainUrl: string
   groupName: string
   darkTheme: boolean
+  repositories: RepositoryOption[]
 }
 
 export interface LegacyBranchRecord {

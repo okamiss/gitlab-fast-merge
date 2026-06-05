@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { DeleteOutlined, EditOutlined, ExperimentOutlined, ImportOutlined, RocketOutlined } from '@ant-design/icons'
 import { Button, Input, Modal, Popconfirm, Select, Space, Table, Tag, Tooltip, Typography } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { progressOptions, storeOptions } from '@/constants/options'
-import type { BranchRecord } from '@/types'
+import { progressOptions } from '@/constants/options'
+import type { BranchRecord, RepositoryOption } from '@/types'
 
 interface BranchTableProps {
   records: BranchRecord[]
@@ -11,6 +11,7 @@ interface BranchTableProps {
   page: number
   pageSize: number
   total: number
+  repositories: RepositoryOption[]
   onImport: (record: BranchRecord) => void
   onImportAndOpen: (record: BranchRecord, target: 'beta' | 'prod') => void
   onDelete: (id: string) => Promise<void>
@@ -30,6 +31,7 @@ export function BranchTable({
   page,
   pageSize,
   total,
+  repositories,
   onImport,
   onImportAndOpen,
   onDelete,
@@ -58,7 +60,7 @@ export function BranchTable({
       title: '仓库',
       dataIndex: 'storeName',
       width: 150,
-      render: (storeName: string) => storeOptions.find((item) => item.value === storeName)?.label
+      render: (storeName: string) => repositories.find((item) => item.value === storeName)?.label ?? storeName
     },
     { title: '描述', dataIndex: 'description', ellipsis: true, responsive: ['sm'] },
     {

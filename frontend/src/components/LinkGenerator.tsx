@@ -1,14 +1,14 @@
 import { CopyOutlined, ExportOutlined, LinkOutlined } from '@ant-design/icons'
 import { Alert, Button, Card, Input, Select, Space, Typography, message } from 'antd'
-import { storeOptions } from '@/constants/options'
 import { copyText } from '@/utils/clipboard'
 import { buildGitLabLinks } from '@/utils/gitlab-links'
-import type { GeneratedLink, UserSettings } from '@/types'
+import type { GeneratedLink, RepositoryOption, UserSettings } from '@/types'
 
 interface LinkGeneratorProps {
   branch: string
   storeName: string
   settings: UserSettings
+  repositories: RepositoryOption[]
   onBranchChange: (value: string) => void
   onStoreChange: (value: string) => void
 }
@@ -17,11 +17,12 @@ export function LinkGenerator({
   branch,
   storeName,
   settings,
+  repositories,
   onBranchChange,
   onStoreChange
 }: LinkGeneratorProps) {
   const [messageApi, contextHolder] = message.useMessage()
-  const links: GeneratedLink[] = buildGitLabLinks(branch, storeName, settings)
+  const links: GeneratedLink[] = buildGitLabLinks(branch, storeName, settings, repositories)
 
   return (
     <>
@@ -46,7 +47,7 @@ export function LinkGenerator({
         </div>
         <div>
           <label className="field-label">代码仓库</label>
-          <Select value={storeName} onChange={onStoreChange} options={storeOptions} />
+          <Select value={storeName} onChange={onStoreChange} options={repositories} />
         </div>
       </div>
       <div className="link-list">

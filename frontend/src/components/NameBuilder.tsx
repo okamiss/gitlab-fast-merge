@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { BranchesOutlined, CopyOutlined, SaveOutlined } from '@ant-design/icons'
 import { Button, Card, Checkbox, Col, Input, Row, Select, Typography, message } from 'antd'
 import dayjs from 'dayjs'
-import { storeOptions } from '@/constants/options'
+import type { RepositoryOption } from '@/types'
 import { copyText } from '@/utils/clipboard'
 
 type TimePart = 'date' | 'minute' | 'second'
@@ -12,6 +12,7 @@ type SaveBranchOptions = { openCreateLink?: boolean }
 interface NameBuilderProps {
   type: 'branch' | 'tag'
   defaultPrefix?: string
+  repositories: RepositoryOption[]
   onPreviewChange?: (value: string) => void
   onSaveBranch?: (payload: SaveBranchPayload, options?: SaveBranchOptions) => void | Promise<void>
 }
@@ -33,6 +34,7 @@ function formatTime(parts: TimePart[], now: dayjs.Dayjs) {
 export function NameBuilder({
   type,
   defaultPrefix = '',
+  repositories,
   onPreviewChange,
   onSaveBranch
 }: NameBuilderProps) {
@@ -43,13 +45,19 @@ export function NameBuilder({
   const [timeParts, setTimeParts] = useState<TimePart[]>(isBranch ? ['date'] : ['date', 'minute'])
   const [now, setNow] = useState(dayjs())
   const [description, setDescription] = useState('')
-  const [storeName, setStoreName] = useState(storeOptions[0].value)
+  const [storeName, setStoreName] = useState(repositories[0]?.value ?? '')
 
   useEffect(() => {
     if (isBranch) {
       setPrefix(defaultPrefix)
     }
   }, [defaultPrefix, isBranch])
+
+  useEffect(() => {
+    if (!repositories.some((repository) => repository.value === storeName)) {
+      setStoreName(repositories[0]?.value ?? '')
+    }
+  }, [repositories, storeName])
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(dayjs()), 1000)
@@ -131,15 +139,15 @@ export function NameBuilder({
             />
           </Col>
           <Col xs={24} sm={12} lg={6}>
-            <Select value={storeName} onChange={setStoreName} options={storeOptions} />
+            <Select value={storeName} onChange={setStoreName} options={repositories} />
           </Col>
           <Col xs={12} sm={6} lg={4}>
-            <Button type="primary" icon={<SaveOutlined />} onClick={() => saveBranch()} block>
+            <Button type="primary" icon={<SaveOutlined />} onClick={() => saveBranch()} disabled={!storeName} block>
               保存
             </Button>
           </Col>
           <Col xs={12} sm={6} lg={4}>
-            <Button icon={<BranchesOutlined />} onClick={() => saveBranch({ openCreateLink: true })} block>保存并创建</Button>
+            <Button icon={<BranchesOutlined />} onClick={() => saveBranch({ openCreateLink: true })} disabled={!storeName} block>保存并创建</Button>
           </Col>
         </Row>
       )}
