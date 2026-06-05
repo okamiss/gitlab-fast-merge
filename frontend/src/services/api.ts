@@ -2,6 +2,7 @@ import type {
   AuthResponse,
   AuthUser,
   BranchRecord,
+  BranchTrend,
   LegacyBranchRecord,
   PaginatedBranchRecords,
   UserSettings
@@ -57,6 +58,8 @@ export const authApi = {
 export const branchApi = {
   list: (page = 1, pageSize = 10) =>
     request<PaginatedBranchRecords>(`/branches?page=${page}&pageSize=${pageSize}`),
+  trend: (year?: number) =>
+    request<BranchTrend>(`/branches/trend${year ? `?year=${year}` : ''}`),
   create: (payload: Pick<BranchRecord, 'branch' | 'storeName' | 'description'>) =>
     request<BranchRecord>('/branches', { method: 'POST', body: JSON.stringify(payload) }),
   update: (id: string, payload: Partial<Pick<BranchRecord, 'description' | 'progress'>>) =>

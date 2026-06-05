@@ -28,6 +28,15 @@ export interface PaginatedBranchRecords {
   }
 }
 
+export interface BranchTrend {
+  years: number[]
+  selectedYear?: number
+  months: Array<{
+    month: number
+    count: number
+  }>
+}
+
 export interface UserSettings {
   defaultPrefix: string
   domainUrl: string

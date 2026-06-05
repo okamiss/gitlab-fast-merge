@@ -9,6 +9,30 @@ import { normalizeBranchPage } from './pagination'
 export class BranchesService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async trend(userId: string, year?: number | string) {
+    const records = await this.prisma.branchRecord.findMany({
+      where: { userId },
+      select: { createdAt: true },
+      orderBy: { createdAt: 'desc' }
+    })
+    const years = Array.from(new Set(records.map((record) => record.createdAt.getFullYear()))).sort((a, b) => b - a)
+    const requestedYear = typeof year === 'string' ? Number(year) : year
+    const selectedYear =
+      typeof requestedYear === 'number' && years.includes(requestedYear) ? requestedYear : years[0]
+    const months = Array.from({ length: 12 }, (_, index) => ({ month: index + 1, count: 0 }))
+
+    if (selectedYear) {
+      for (const record of records) {
+        const createdAt = record.createdAt
+        if (createdAt.getFullYear() === selectedYear) {
+          months[createdAt.getMonth()].count += 1
+        }
+      }
+    }
+
+    return { years, selectedYear, months }
+  }
+
   async list(userId: string, page?: number | string, pageSize?: number | string) {
     const pagination = normalizeBranchPage(page, pageSize)
     const where = { userId }

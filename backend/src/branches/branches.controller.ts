@@ -3,6 +3,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { CurrentUser } from '../common/decorators/current-user.decorator'
 import type { AuthUser } from '../common/types/auth-user'
 import { BranchesService } from './branches.service'
+import { BranchTrendQueryDto } from './dto/branch-trend-query.dto'
 import { CreateBranchDto } from './dto/create-branch.dto'
 import { ImportBranchesDto } from './dto/import-branches.dto'
 import { ListBranchesQueryDto } from './dto/list-branches-query.dto'
@@ -12,6 +13,11 @@ import { UpdateBranchDto } from './dto/update-branch.dto'
 @Controller('branches')
 export class BranchesController {
   constructor(private readonly branches: BranchesService) {}
+
+  @Get('trend')
+  trend(@CurrentUser() user: AuthUser, @Query() query: BranchTrendQueryDto) {
+    return this.branches.trend(user.userId, query.year)
+  }
 
   @Get()
   list(@CurrentUser() user: AuthUser, @Query() query: ListBranchesQueryDto) {

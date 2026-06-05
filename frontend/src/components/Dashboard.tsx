@@ -10,7 +10,7 @@ import { StatisticsPanel } from '@/components/StatisticsPanel'
 import { storeOptions } from '@/constants/options'
 import { useAuth } from '@/hooks/useAuth'
 import { branchApi, settingsApi } from '@/services/api'
-import type { BranchRecord, GeneratedLink, LegacyBranchRecord, UserSettings } from '@/types'
+import type { BranchRecord, BranchTrend, GeneratedLink, LegacyBranchRecord, UserSettings } from '@/types'
 import { buildGitLabLinks } from '@/utils/gitlab-links'
 
 const emptySettings: UserSettings = {
@@ -33,6 +33,7 @@ export function Dashboard() {
   const { user } = useAuth()
   const [messageApi, contextHolder] = message.useMessage()
   const [records, setRecords] = useState<BranchRecord[]>([])
+  const [branchTrend, setBranchTrend] = useState<BranchTrend | null>(null)
   const [settings, setSettings] = useState<UserSettings>(emptySettings)
   const [branch, setBranch] = useState('')
   const [storeName, setStoreName] = useState(storeOptions[0].value)
@@ -51,15 +52,25 @@ export function Dashboard() {
     setRecordsPageSize(nextRecords.meta.pageSize)
   }, [])
 
+  const loadBranchTrend = useCallback(async (year?: number) => {
+    const nextTrend = await branchApi.trend(year)
+    setBranchTrend(nextTrend)
+  }, [])
+
   const loadDashboard = useCallback(async () => {
     setLoading(true)
     try {
-      const [nextRecords, nextSettings] = await Promise.all([branchApi.list(1), settingsApi.get()])
+      const [nextRecords, nextSettings, nextTrend] = await Promise.all([
+        branchApi.list(1),
+        settingsApi.get(),
+        branchApi.trend()
+      ])
       setRecords(nextRecords.data)
       setRecordsPage(nextRecords.meta.page)
       setRecordsTotal(nextRecords.meta.total)
       setRecordsPageSize(nextRecords.meta.pageSize)
       setSettings(nextSettings)
+      setBranchTrend(nextTrend)
     } catch (error) {
       messageApi.error(error instanceof Error ? error.message : '加载工作台失败')
     } finally {
@@ -111,7 +122,7 @@ export function Dashboard() {
   ) => {
     try {
       await branchApi.create(payload)
-      await loadBranches(1, recordsPageSize)
+      await Promise.all([loadBranches(1, recordsPageSize), loadBranchTrend(branchTrend?.selectedYear)])
       setBranch(payload.branch)
       setStoreName(payload.storeName)
       messageApi.success('Branch 已保存')
@@ -131,7 +142,10 @@ export function Dashboard() {
 
   const deleteBranch = async (id: string) => {
     await branchApi.remove(id)
-    await loadBranches(records.length === 1 && recordsPage > 1 ? recordsPage - 1 : recordsPage, recordsPageSize)
+    await Promise.all([
+      loadBranches(records.length === 1 && recordsPage > 1 ? recordsPage - 1 : recordsPage, recordsPageSize),
+      loadBranchTrend(branchTrend?.selectedYear)
+    ])
     messageApi.success('记录已删除')
   }
 
@@ -234,7 +248,7 @@ export function Dashboard() {
                 onUpdate={updateBranch}
               />
               <Row gutter={[20, 20]}>
-                <Col xs={24} xl={14}><StatisticsPanel records={records} /></Col>
+                <Col xs={24} xl={14}><StatisticsPanel trend={branchTrend} onYearChange={loadBranchTrend} /></Col>
                 <Col xs={24} xl={10}>
                   <SettingsPanel settings={settings} saving={savingSettings} onSave={saveSettings} />
                 </Col>

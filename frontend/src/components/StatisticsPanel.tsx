@@ -1,33 +1,25 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { Card, Empty, Select, Space } from 'antd'
 import { BarChartOutlined } from '@ant-design/icons'
-import type { BranchRecord } from '@/types'
+import type { BranchTrend } from '@/types'
 
 interface StatisticsPanelProps {
-  records: BranchRecord[]
+  trend: BranchTrend | null
+  onYearChange: (year: number) => void
 }
 
 const monthLabels = ['1 月', '2 月', '3 月', '4 月', '5 月', '6 月', '7 月', '8 月', '9 月', '10 月', '11 月', '12 月']
 
-export function StatisticsPanel({ records }: StatisticsPanelProps) {
-  const years = useMemo(
-    () => Array.from(new Set(records.map((item) => new Date(item.createdAt).getFullYear()))).sort((a, b) => b - a),
-    [records]
-  )
-  const [preferredYear, setPreferredYear] = useState<number>()
-  const selectedYear = preferredYear && years.includes(preferredYear) ? preferredYear : years[0]
-
+export function StatisticsPanel({ trend, onYearChange }: StatisticsPanelProps) {
+  const years = trend?.years ?? []
   const monthlyData = useMemo(
     () =>
-      monthLabels.map((name, month) => ({
+      monthLabels.map((name, monthIndex) => ({
         name,
-        count: records.filter((item) => {
-          const date = new Date(item.createdAt)
-          return date.getFullYear() === selectedYear && date.getMonth() === month
-        }).length
+        count: trend?.months.find((item) => item.month === monthIndex + 1)?.count ?? 0
       })),
-    [records, selectedYear]
+    [trend]
   )
 
   return (
@@ -36,8 +28,8 @@ export function StatisticsPanel({ records }: StatisticsPanelProps) {
       title={<Space><BarChartOutlined />Branch 趋势</Space>}
       extra={
         <Select
-          value={selectedYear}
-          onChange={setPreferredYear}
+          value={trend?.selectedYear}
+          onChange={onYearChange}
           options={years.map((year) => ({ value: year, label: `${year} 年` }))}
           placeholder="选择年份"
           disabled={!years.length}

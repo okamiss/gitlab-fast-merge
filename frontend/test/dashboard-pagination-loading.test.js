@@ -27,3 +27,11 @@ test('branch table exposes page size selector', () => {
   assert.match(tableSource, /pageSizeOptions: \[10, 20, 50, 100\]/)
   assert.match(tableSource, /hideOnSinglePage: false/)
 })
+
+test('branch trend loads independently from paginated branch records', () => {
+  assert.match(source, /const \[branchTrend, setBranchTrend\] = useState/)
+  assert.match(source, /const loadBranchTrend = useCallback/)
+  assert.match(source, /branchApi\.trend\(/)
+  assert.match(source, /<StatisticsPanel trend=\{branchTrend\}/)
+  assert.doesNotMatch(source, /<StatisticsPanel records=\{records\}/)
+})
