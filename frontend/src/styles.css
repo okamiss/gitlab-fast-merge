@@ -55,6 +55,8 @@ button, a, .ant-select, .ant-switch, .ant-segmented-item { cursor: pointer; }
 .section-heading h4 { margin: 0 0 4px !important; }
 .progress-cycle-button { height: auto; padding: 0; line-height: 1; }
 .progress-cycle-button .ant-tag { margin-inline-end: 0; }
+.settings-preview { display: grid; gap: 8px; margin: 4px 0 18px; padding: 12px; border: 1px solid #bbf7d0; border-radius: 10px; background: #f0fdf4; }
+.settings-preview code { overflow-wrap: anywhere; white-space: normal; }
 .modal-form { display: grid; gap: 16px; padding-top: 12px; }
 .auth-page { min-height: 100vh; display: grid; grid-template-columns: minmax(0,1fr) 430px; gap: 56px; align-items: center; padding: 64px max(24px,calc((100vw - 1180px)/2)); color: #f8fafc; background: radial-gradient(circle at 15% 10%,#166534 0,#0f172a 38%,#020617 100%); }
 .auth-intro h1 { margin: 22px 0 12px !important; color: #fff !important; font-size: clamp(36px,5vw,64px) !important; }
@@ -70,6 +72,7 @@ button, a, .ant-select, .ant-switch, .ant-segmented-item { cursor: pointer; }
 .dark-shell .field-label { color: #cbd5e1; }
 .dark-shell .preview-box { border-color: #166534; background: rgba(22,101,52,.22); }
 .dark-shell .preview-box span { color: #86efac; }
+.dark-shell .settings-preview { border-color: #166534; background: rgba(22,101,52,.18); }
 
 @media (max-width: 900px) {
   .app-header { top: 0; margin: 0; border-radius: 0; }
