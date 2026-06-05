@@ -53,6 +53,8 @@ button, a, .ant-select, .ant-switch, .ant-segmented-item { cursor: pointer; }
 .section-block { margin: 20px 0; padding: 20px; border-radius: 12px; background: #fff; }
 .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
 .section-heading h4 { margin: 0 0 4px !important; }
+.progress-cycle-button { height: auto; padding: 0; line-height: 1; }
+.progress-cycle-button .ant-tag { margin-inline-end: 0; }
 .modal-form { display: grid; gap: 16px; padding-top: 12px; }
 .auth-page { min-height: 100vh; display: grid; grid-template-columns: minmax(0,1fr) 430px; gap: 56px; align-items: center; padding: 64px max(24px,calc((100vw - 1180px)/2)); color: #f8fafc; background: radial-gradient(circle at 15% 10%,#166534 0,#0f172a 38%,#020617 100%); }
 .auth-intro h1 { margin: 22px 0 12px !important; color: #fff !important; font-size: clamp(36px,5vw,64px) !important; }

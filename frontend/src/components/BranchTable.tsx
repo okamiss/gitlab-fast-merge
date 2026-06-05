@@ -18,6 +18,12 @@ interface BranchTableProps {
   onUpdate: (id: string, payload: { description: string; progress: number }) => Promise<void>
 }
 
+function getNextProgress(progress: number) {
+  const currentIndex = progressOptions.findIndex((item) => item.value === progress)
+  const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % progressOptions.length : 0
+  return progressOptions[nextIndex].value
+}
+
 export function BranchTable({
   records,
   loading,
@@ -32,6 +38,19 @@ export function BranchTable({
 }: BranchTableProps) {
   const [editing, setEditing] = useState<BranchRecord | null>(null)
   const [saving, setSaving] = useState(false)
+  const [updatingProgressId, setUpdatingProgressId] = useState<string | null>(null)
+
+  const cycleProgress = async (record: BranchRecord) => {
+    setUpdatingProgressId(record.id)
+    try {
+      await onUpdate(record.id, {
+        description: record.description,
+        progress: getNextProgress(record.progress)
+      })
+    } finally {
+      setUpdatingProgressId(null)
+    }
+  }
 
   const columns: TableColumnsType<BranchRecord> = [
     { title: 'Branch', dataIndex: 'branch', width: 150, ellipsis: true },
@@ -46,9 +65,23 @@ export function BranchTable({
       title: '进度',
       dataIndex: 'progress',
       width: 100,
-      render: (progress: number) => {
+      render: (progress: number, record) => {
         const option = progressOptions.find((item) => item.value === progress)
-        return <Tag color={option?.color}>{option?.label}</Tag>
+        const nextOption = progressOptions.find((item) => item.value === getNextProgress(progress))
+        return (
+          <Tooltip title={`点击切换到${nextOption?.label ?? '下一个状态'}`}>
+            <Button
+              className="progress-cycle-button"
+              type="text"
+              size="small"
+              loading={updatingProgressId === record.id}
+              aria-label={`切换进度到 ${nextOption?.label ?? '下一个状态'}`}
+              onClick={() => cycleProgress(record)}
+            >
+              <Tag color={option?.color}>{option?.label}</Tag>
+            </Button>
+          </Tooltip>
+        )
       }
     },
     {

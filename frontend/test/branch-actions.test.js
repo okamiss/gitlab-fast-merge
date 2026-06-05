@@ -34,3 +34,11 @@ test('dashboard opens generated branch and merge links from shared link builder'
   assert.match(dashboardSource, /openGeneratedLink\(payload\.branch, payload\.storeName, 'branch'\)/)
   assert.match(dashboardSource, /openGeneratedLink\(record\.branch, record\.storeName, target\)/)
 })
+
+test('branch progress tag cycles to the next status when clicked', () => {
+  assert.match(branchTableSource, /function getNextProgress\(progress: number\)/)
+  assert.match(branchTableSource, /const cycleProgress = async \(record: BranchRecord\) =>/)
+  assert.match(branchTableSource, /onUpdate\(record\.id, \{\s*description: record\.description,\s*progress: getNextProgress\(record\.progress\)\s*\}\)/)
+  assert.match(branchTableSource, /aria-label=\{`切换进度到 \$\{nextOption\?\.label/)
+  assert.match(branchTableSource, /onClick=\{\(\) => cycleProgress\(record\)\}/)
+})
